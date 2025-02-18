@@ -1,8 +1,12 @@
 <template>
-  <HeroLanding />
+  <div class="">
+    <HeroLanding />
+    <AppNavbar class="mt-6"/>
+  </div>
 </template>
 
 <script>
+import AppNavbar from '~/components/AppNavbar.vue';
 import HeroLanding from '~/components/HeroLanding.vue';
 
 export default {
@@ -10,7 +14,14 @@ export default {
   layout:'blank',
   components: {
     HeroLanding,
+    AppNavbar
   },
-  middleware: 'auth', 
+  middleware: 'auth',
 }
 </script>
+
+<style scoped>
+.mt-6{
+  margin-top: 150px;
+}
+</style>

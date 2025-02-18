@@ -1,16 +1,16 @@
 <template>
   <div class="">
     <Header />
-  <div class="container mt-4">
+    <div class="container mt-4">
 
-    <b-form-group class="mb- card-shadow">
-      <b-form-input v-model="searchQuery" placeholder="Cari berdasarkan nama peminjam..." debounce="300" size="lg"
-        class="shadow-sm"></b-form-input>
-    </b-form-group>
+      <b-form-group class="mb- card-shadow">
+        <b-form-input v-model="searchQuery" placeholder="Cari berdasarkan nama peminjam..." debounce="300" size="lg"
+          class="shadow-sm"></b-form-input>
+      </b-form-group>
 
-    <b-button variant="success" @click="openAddModal" class="mb-3">
-      Tambah Peminjaman <b-icon-plus></b-icon-plus>
-    </b-button>
+      <b-button variant="success" @click="openAddModal" class="mb-3">
+        Tambah Peminjaman <b-icon-plus></b-icon-plus>
+      </b-button>
 
       <b-table striped hover bordered responsive :items="paginatedPeminjaman" :fields="fields"
         class="bg-light  table-hover card-shadow">
@@ -30,27 +30,33 @@
         </template>
       </b-table>
 
-    <b-pagination v-model="currentPage" :total-rows="filteredPeminjaman.length" :per-page="perPage"
-      aria-controls="peminjaman-table" align="center" class="mt-3" size="lg"></b-pagination>
+      <b-pagination v-model="currentPage" :total-rows="filteredPeminjaman.length" :per-page="perPage"
+        aria-controls="peminjaman-table" align="center" class="mt-3" size="lg"></b-pagination>
 
-    <!-- Modal Tambah/Edit Peminjaman -->
-    <PeminjamanModal :showModal="showModal" :peminjamanData="currentPeminjaman" @submit="handleSubmit"
-      @update:showModal="showModal = $event" />
+      <!-- Modal Tambah/Edit Peminjaman -->
+      <PeminjamanModal
+  :showModal="showModal"
+  :peminjamanData="currentPeminjaman"
+  @submit="handleSubmit"
+  @update:showModal="showModal = $event"
+/>
 
-    <!-- Modal Konfirmasi Hapus -->
-    <NotificationModal :isVisible="isDeleteModalVisible" :messageTitle="'Konfirmasi Penghapusan'"
-      :messageBody="'Apakah Anda yakin ingin menghapus peminjaman ini?'" @close="closeDeleteModal">
-      <template #footer>
-        <button @click="deletePeminjaman" class="btn btn-danger">
-          Ya, Hapus
-        </button>
-        <button @click="closeDeleteModal" class="btn btn-secondary">
-          Batal
-        </button>
-      </template>
-    </NotificationModal>
+
+
+      <!-- Modal Konfirmasi Hapus -->
+      <NotificationModal :isVisible="isDeleteModalVisible" :messageTitle="'Konfirmasi Penghapusan'"
+        :messageBody="'Apakah Anda yakin ingin menghapus peminjaman ini?'" @close="closeDeleteModal">
+        <template #footer>
+          <button @click="deletePeminjaman" class="btn btn-danger">
+            Ya, Hapus
+          </button>
+          <button @click="closeDeleteModal" class="btn btn-secondary">
+            Batal
+          </button>
+        </template>
+      </NotificationModal>
+    </div>
   </div>
-</div>
 </template>
 
 <script>
@@ -88,7 +94,7 @@ export default {
       isDeleteModalVisible: false,
       peminjamanToDelete: null,
       fields: [
-        { key: "user.nama", label: "Nama Peminjam", sortable: true },
+        { key: "user.name", label: "Nama Peminjam", sortable: true },
         { key: "buku.judul", label: "Judul Buku", sortable: true },
         { key: "tanggal_pinjam", label: "Tanggal Pinjam", sortable: true },
         { key: "tanggal_kembali", label: "Tanggal Kembali", sortable: true },
@@ -99,6 +105,9 @@ export default {
     };
   },
   computed: {
+    validUserId() {
+      return this.id_user ? this.id_user : null;
+    },
     filteredPeminjaman() {
       if (!this.searchQuery) return this.peminjaman;
       const query = this.searchQuery.toLowerCase();
@@ -116,97 +125,96 @@ export default {
     await this.fetchPeminjaman();
   },
   methods: {
-    formatDateTime(dateTimeString) {
-      if (!dateTimeString) return '';
-      const date = new Date(dateTimeString);
-      return date.toLocaleString('id-ID', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
-      });
-    },
-    openAddModal() {
-      this.currentPeminjaman = {
-        id_peminjaman: null,
-        id_user: null,
-        id_buku: null,
-        tanggal_pinjam: "",
-        durasi_hari: 5,
-        status_kembali: false,
-      };
-      this.showModal = true;
-    },
-    openEditModal(peminjaman) {
-      this.currentPeminjaman = { ...peminjaman };
-      this.showModal = true;
-    },
-    async handleSubmit(peminjamanData) {
-      console.log("Payload yang dikirim:", JSON.stringify(peminjamanData, null, 2));
-      try {
-        if (peminjamanData.id_peminjaman) {
-          await updatePeminjaman(peminjamanData.id_peminjaman, peminjamanData);
-          this.$toast.success("Peminjaman berhasil diperbarui!");
-        } else {
-          await createPeminjaman({
-            id_user: peminjamanData.id_user,
-            id_buku: peminjamanData.id_buku,
-            tanggal_pinjam: new Date().toISOString(), // Format yang benar
-            durasi_hari: 5, // Default durasi hari
-            status_kembali: false, // Default status kembali
-          });
-          this.$toast.success("Peminjaman berhasil ditambahkan!");
-        }
-        this.showModal = false;
-        await this.fetchPeminjaman();
-      } catch (error) {
-        console.error("Terjadi kesalahan saat menambahkan peminjaman:", error);
-        this.$toast.error("Terjadi kesalahan. Silakan coba lagi!");
-      }
-    },
-    async deletePeminjaman() {
-      if (!this.peminjamanToDelete) {
-        console.error("ID peminjaman tidak ditemukan!");
-        return;
-      }
-      try {
-        await deletePeminjaman(this.peminjamanToDelete);
-        this.peminjaman = this.peminjaman.filter((peminjaman) => peminjaman.id_peminjaman !== this.peminjamanToDelete);
-        this.$toast.success("Peminjaman berhasil dihapus!");
-        this.closeDeleteModal();
-      } catch (error) {
-        this.$toast.error("Terjadi kesalahan saat menghapus peminjaman!");
-        this.closeDeleteModal();
-      }
-    },
-    confirmDeletePeminjaman(peminjaman) {
-      if (peminjaman && peminjaman.id_peminjaman) {
-        this.peminjamanToDelete = peminjaman.id_peminjaman;
-        this.isDeleteModalVisible = true;
-      } else {
-        console.error("ID peminjaman tidak ditemukan!");
-      }
-    },
-    closeDeleteModal() {
-      this.isDeleteModalVisible = false;
-      this.peminjamanToDelete = null;
-    },
-    async fetchPeminjaman() {
-      try {
-        const data = await getAllPeminjaman();
-        this.peminjaman = data.data;
-      } catch (error) {
-        console.error("Error fetching peminjaman:", error);
-      }
-    },
+  formatDateTime(dateTimeString) {
+    if (!dateTimeString) return '';
+    const date = new Date(dateTimeString);
+    return date.toLocaleString('id-ID', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+    });
   },
+  openAddModal() {
+    this.currentPeminjaman = {
+      id_peminjaman: null,
+      id_user: null,
+      id_buku: null,
+      tanggal_pinjam: "",
+      durasi_hari: 5,
+      status_kembali: false,
+    };
+    this.showModal = true;
+  },
+  openEditModal(peminjaman) {
+    this.currentPeminjaman = { ...peminjaman };
+    this.showModal = true;
+  },
+  async handleSubmit(peminjamanData) {
+  try {
+    if (peminjamanData.get) {
+      // Jika menggunakan FormData
+      await createPeminjaman(peminjamanData);
+    } else {
+      // Jika masih berbentuk object biasa
+      await createPeminjaman({
+        id_user: Number(peminjamanData.id_user),
+        id_buku: Number(peminjamanData.id_buku),
+      });
+    }
+
+    this.$toast.success("Peminjaman berhasil ditambahkan!");
+    this.showModal = false;
+    await this.fetchPeminjaman();
+  } catch (error) {
+    console.error("Error creating peminjaman:", error.response?.data || error.message);
+    this.$toast.error("Terjadi kesalahan. Silakan coba lagi!");
+  }
+}
+,
+  async deletePeminjaman() {
+    if (!this.peminjamanToDelete) {
+      console.error("ID peminjaman tidak ditemukan!");
+      return;
+    }
+    try {
+      await deletePeminjaman(this.peminjamanToDelete);
+      this.peminjaman = this.peminjaman.filter((peminjaman) => peminjaman.id_peminjaman !== this.peminjamanToDelete);
+      this.$toast.success("Peminjaman berhasil dihapus!");
+      this.closeDeleteModal();
+    } catch (error) {
+      this.$toast.error("Terjadi kesalahan saat menghapus peminjaman!");
+      this.closeDeleteModal();
+    }
+  },
+  confirmDeletePeminjaman(peminjaman) {
+    if (peminjaman && peminjaman.id_peminjaman) {
+      this.peminjamanToDelete = peminjaman.id_peminjaman;
+      this.isDeleteModalVisible = true;
+    } else {
+      console.error("ID peminjaman tidak ditemukan!");
+    }
+  },
+  closeDeleteModal() {
+    this.isDeleteModalVisible = false;
+    this.peminjamanToDelete = null;
+  },
+  async fetchPeminjaman() {
+    try {
+      const data = await getAllPeminjaman();
+      this.peminjaman = data.data;
+    } catch (error) {
+      console.error("Error fetching peminjaman:", error);
+    }
+  }
+}
+
 };
 </script>
 
 <style scoped>
-
 .b-form-input {
   border-radius: 30px;
   background-color: #f1f1f1;

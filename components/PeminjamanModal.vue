@@ -1,18 +1,21 @@
 <template>
-  <b-modal
-    v-model="showModal"
-    :title="isEditMode ? 'Edit Peminjaman' : 'Tambah Peminjaman'"
-    size="lg"
-    @ok="submitForm"
-    @update:showModal="updateShowModal"
-  >
+  <b-modal v-model="localShowModal" :title="isEditMode ? 'Edit Peminjaman' : 'Tambah Peminjaman'" size="lg"
+    @ok="submitForm">
     <b-form @submit.prevent="submitForm">
       <b-form-group label="Pilih User" label-for="userSelect">
-        <b-form-select id="userSelect" v-model="form.id_user" :options="userOptions" required></b-form-select>
+        <b-form-select id="userSelect" v-model="form.id_user" :options="userOptions" required>
+          <template #first>
+            <option :value="null" disabled>Pilih User</option>
+          </template>
+        </b-form-select>
       </b-form-group>
 
       <b-form-group label="Pilih Buku" label-for="bookSelect">
-        <b-form-select id="bookSelect" v-model="form.id_buku" :options="bookOptions" required></b-form-select>
+        <b-form-select id="bookSelect" v-model="form.id_buku" :options="bookOptions" required>
+          <template #first>
+            <option :value="null" disabled>Pilih Buku</option>
+          </template>
+        </b-form-select>
       </b-form-group>
     </b-form>
   </b-modal>
@@ -39,55 +42,41 @@ export default {
   },
   data() {
     return {
-      form: {
-        id_peminjaman: null,
-        id_user: null,
-        id_buku: null,
-        tanggal_pinjam: "",
-        durasi_hari: 5,
-        status_kembali: false,
-      },
+      form: {},
       userOptions: [],
       bookOptions: [],
+      localShowModal: this.showModal, // Menyimpan nilai showModal ke data lokal
     };
   },
   watch: {
-    peminjamanData: {
-      handler(newVal) {
-        if (newVal) {
-          this.form = {
-            id_peminjaman: newVal.id_peminjaman ?? null,
-            id_user: newVal.id_user ?? null,
-            id_buku: newVal.id_buku ?? null,
-            tanggal_pinjam: newVal.tanggal_pinjam ?? "",
-            durasi_hari: newVal.durasi_hari ?? 5,
-            status_kembali: newVal.status_kembali ?? false,
-          };
-        }
-      },
-      deep: true,
-      immediate: true,
-    },
+  showModal(newVal) {
+    if (newVal) {
+      this.initializeForm();
+    }
+    this.localShowModal = newVal;
   },
+  localShowModal(newVal) {
+    this.$emit('update:showModal', newVal);
+  }
+},
   computed: {
     isEditMode() {
-      return this.form.id_peminjaman !== null && this.form.id_peminjaman !== undefined;
+      return this.form.id_peminjaman !== null;
     },
   },
   methods: {
     async fetchUsers() {
   try {
     const response = await getAllUsers();
-    console.log("Data User:", response.data);
+    console.log("Users fetched:", response.data);  // Log untuk memeriksa data yang diterima
     this.userOptions = response.data.map(user => ({
-      value: user.id_user,
-      text: user.name,
+      value: user.id,  // Gunakan 'id' sesuai dengan data yang diterima
+      text: user.name,  // Gunakan 'name' sesuai dengan data yang diterima
     }));
   } catch (error) {
     console.error("Gagal mengambil data user:", error);
   }
-}
-,
+},
     async fetchBooks() {
       try {
         const response = await getAllBuku();
@@ -99,12 +88,26 @@ export default {
         console.error("Gagal mengambil data buku:", error);
       }
     },
-    updateShowModal(value) {
-      this.$emit("update:showModal", value);
+    initializeForm() {
+      this.form = {
+        id_peminjaman: this.peminjamanData.id_peminjaman || null,
+        id_user: this.peminjamanData.id_user ? Number(this.peminjamanData.id_user) : null,
+        id_buku: this.peminjamanData.id_buku ? Number(this.peminjamanData.id_buku) : null,
+      };
     },
     submitForm() {
-      this.$emit("submit", this.form);
-    },
+  if (!this.form.id_user || !this.form.id_buku) {
+    this.$toast.error("User dan Buku harus dipilih!");
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append("id_user", this.form.id_user);
+  formData.append("id_buku", this.form.id_buku);
+
+  this.$emit("submit", formData);
+}
+
   },
   mounted() {
     this.fetchUsers();

@@ -11,23 +11,53 @@
     </div>
     <nav>
       <ul>
-        <li><nuxt-link to="/admin/dashboard"><BIconHouse /> Dashboard</nuxt-link></li>
-        <li><nuxt-link to="/admin/users"><BIconPerson /> Pengguna</nuxt-link></li>
-        <li><nuxt-link to="/admin/peminjaman"><BIconJournalAlbum /> Peminjaman</nuxt-link></li>
-        <!-- Dropdown Buku -->
         <li>
-          <a href="#" @click.prevent="toggleDropdown('buku')">
+          <nuxt-link to="/admin/dashboard" exact-active-class="active">
+            <BIconHouse /> Dashboard
+          </nuxt-link>
+        </li>
+        <li>
+          <nuxt-link to="/admin/users" exact-active-class="active">
+            <BIconPerson /> Pengguna
+          </nuxt-link>
+        </li>
+        <li>
+          <nuxt-link to="/admin/peminjaman" exact-active-class="active">
+            <BIconJournalAlbum /> Peminjaman
+          </nuxt-link>
+        </li>
+        <!-- Dropdown Buku -->
+        <li class="dropdown-wrapper">
+          <a href="#" @click.prevent="toggleDropdown('buku')" class="dropdown-btn">
             <BIconBook /> Buku <span :class="dropdowns.buku ? 'rotate' : ''">▼</span>
           </a>
           <ul v-show="dropdowns.buku" class="dropdown">
-            <li><nuxt-link to="/admin/buku"><BIconBook /> Buku</nuxt-link></li>
-            <li><nuxt-link to="/admin/penulis"><BIconPencilSquare /> Penulis</nuxt-link></li>
-        <li><nuxt-link to="/admin/kategori"><BIconTags /> Kategori</nuxt-link></li>
-        <li><nuxt-link to="/admin/penerbit"><BIconBuilding /> Penerbit</nuxt-link></li>
+            <li>
+              <nuxt-link to="/admin/buku" exact-active-class="active">
+                <BIconBook /> Buku
+              </nuxt-link>
+            </li>
+            <li>
+              <nuxt-link to="/admin/penulis" exact-active-class="active">
+                <BIconPencilSquare /> Penulis
+              </nuxt-link>
+            </li>
+            <li>
+              <nuxt-link to="/admin/kategori" exact-active-class="active">
+                <BIconTags /> Kategori
+              </nuxt-link>
+            </li>
+            <li>
+              <nuxt-link to="/admin/penerbit" exact-active-class="active">
+                <BIconBuilding /> Penerbit
+              </nuxt-link>
+            </li>
           </ul>
         </li>
         <li>
-          <a href="#" @click.prevent="logout"><BIconBoxArrowRight /> Logout</a>
+          <a href="#" @click.prevent="logout">
+            <BIconBoxArrowRight /> Logout
+          </a>
         </li>
       </ul>
     </nav>
@@ -53,7 +83,6 @@ export default {
       },
       dropdowns: {
         buku: false,
-        peminjaman: false,
       },
     };
   },
@@ -95,18 +124,32 @@ export default {
   top: 0;
   left: 0;
   transition: transform 0.3s ease;
+  overflow-y: auto;
+  scrollbar-width: none;
+  padding-top: 200px;
 }
 
+.sidebar::-webkit-scrollbar {
+  display: none;
+}
+
+
 .profile {
-  text-align: center;
+  position: fixed; /* Agar tetap di tempat */
+  top: 0;
+  left: 0;
+  width: 250px; /* Sesuaikan dengan sidebar */
+  z-index: 1000;
   background: rgba(0, 0, 0, 0.6);
   padding: 25px;
-  width: 100%;
+  text-align: center;
   transition: background 0.3s ease;
 }
 
+
 .profile:hover {
   background: rgba(0, 0, 0, 0.8);
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
 }
 
 .profile-img {
@@ -115,11 +158,12 @@ export default {
   object-fit: cover;
   border-radius: 50%;
   border: 4px solid white;
-  transition: transform 0.3s ease;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .profile-img:hover {
   transform: scale(1.1);
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
 }
 
 .user-name {
@@ -149,23 +193,52 @@ nav ul li a {
   display: block;
   padding: 12px;
   border-radius: 8px;
-  transition: background 0.3s ease, transform 0.3s ease;
+  transition: all 0.3s ease-in-out;
+  position: relative;
 }
 
 nav ul li a:hover {
   background: #047857;
   transform: translateX(10px);
+  box-shadow: 5px 5px 15px rgba(4, 120, 87, 0.4);
 }
 
-nav ul li a:active {
-  transform: translateX(5px);
+nav ul li .active {
+  font-weight: bold;
+}
+
+/* STYLE BARU: Dropdown */
+.dropdown-wrapper {
+  position: relative;
+}
+
+.dropdown-btn {
+  cursor: pointer;
+  border-radius: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  color: white;
+  transition: all 0.3s ease-in-out;
+}
+
+.dropdown-btn:hover {
+  background: linear-gradient(135deg, #0e7e5a, #159a74);
+  box-shadow: 0 4px 10px rgba(14, 126, 90, 0.4);
+  transform: translateX(10px);
 }
 
 /* Dropdown */
 .dropdown {
   list-style: none;
-  padding-left: 20px;
+  padding: 10px;
   margin: 0;
+  backdrop-filter: blur(10px);
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+  transition: max-height 0.3s ease-in-out;
 }
 
 .dropdown li {
@@ -176,14 +249,18 @@ nav ul li a:active {
   font-size: 14px;
   border-radius: 5px;
   background: #159a74;
+  transition: all 0.3s ease-in-out;
+  position: relative;
 }
 
-.dropdown li a:hover {
+.dropdown li a:hover,
+.dropdown li a.active {
   background: #0e7e5a;
   transform: translateX(5px);
+  box-shadow: 3px 3px 10px rgba(14, 126, 90, 0.4);
 }
 
-/* Icon Arrow */
+/* Animasi Arrow */
 span {
   float: right;
   transition: transform 0.3s ease;

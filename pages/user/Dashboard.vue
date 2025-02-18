@@ -1,13 +1,25 @@
 <template>
-  
+<div class="">
+  <AppNavbar />
+  <Slider class="mt-6"/>
+</div>
 </template>
 
 <script>
-export default {
+import AppNavbar from '~/components/AppNavbar.vue';
+import Slider from '~/components/Slider.vue';
 
+export default {
+  components :{
+    Slider,
+    AppNavbar
+  },
+  layout:'blank'
 }
 </script>
 
-<style>
-
+<style scoped>
+.mt-6{
+  margin-top: 150px;
+}
 </style>

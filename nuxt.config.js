@@ -42,5 +42,16 @@ export default {
     credentials: true
   },
 
-  build: {}
+  build: {},
+  router: {
+    extendRoutes(routes, resolve) {
+      routes.push(
+        {
+          name: 'detail-buku',
+          path: '/detail-buku/:id_buku',
+          component: resolve(__dirname, 'pages/user/DetailBuku.vue'),
+        },
+      );
+    }
+  }
 }

@@ -24,17 +24,10 @@ export const actions = {
     commit('setToken', token);
     localStorage.setItem('user', JSON.stringify(user));
     localStorage.setItem('token', token);
-  },
-
-  nuxtServerInit({ commit }) {
-    if (process.client) {
-      const user = localStorage.getItem('user');
-      const token = localStorage.getItem('token');
-
-      if (user && token) {
-        commit('setUser', JSON.parse(user));
-        commit('setToken', token);
-      }
-    }
   }
+};
+
+export const getters = {
+  getUser: (state) => state.user,
+  getToken: (state) => state.token
 };

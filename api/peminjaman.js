@@ -57,6 +57,16 @@ export const getAllPeminjaman = async () => {
   }
 };
 
+// Fungsi untuk mengambil peminjaman berdasarkan ID User
+export const getPeminjamanByUserId = async (idUser) => {
+  try {
+    const response = await axiosInstance.get(`/user/${idUser}`);
+    return response.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.error || 'Error fetching user peminjaman');
+  }
+};
+
 // Fungsi untuk mengambil peminjaman berdasarkan ID
 export const getPeminjamanById = async (id) => {
   try {
@@ -84,5 +94,35 @@ export const deletePeminjaman = async (id) => {
     return response.data;
   } catch (error) {
     throw new Error(error.response?.data?.error || 'Error deleting peminjaman');
+  }
+};
+
+// Fungsi untuk membuat booking baru
+export const createBooking = async (bookingData) => {
+  try {
+    const response = await axiosInstance.post('/booking', bookingData);
+    return response.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.error || 'Error creating booking');
+  }
+};
+
+// Fungsi untuk menyetujui booking
+export const approveBooking = async (id) => {
+  try {
+    const response = await axiosInstance.put(`/approve/${id}`);
+    return response.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.error || 'Error approving booking');
+  }
+};
+
+// Fungsi untuk mengembalikan buku
+export const returnBook = async (id) => {
+  try {
+    const response = await axiosInstance.put(`/return/${id}`);
+    return response.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.error || 'Error returning book');
   }
 };
