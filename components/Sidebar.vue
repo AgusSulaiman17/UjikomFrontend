@@ -55,7 +55,7 @@
           </ul>
         </li>
         <li>
-          <a href="#" @click.prevent="logout">
+          <a href="#" @click.prevent="logout" class="mb-4">
             <BIconBoxArrowRight /> Logout
           </a>
         </li>

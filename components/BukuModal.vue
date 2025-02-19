@@ -192,5 +192,5 @@ export default {
 </script>
 
 <style scoped>
-/* Tambahkan gaya CSS sesuai kebutuhan */
+
 </style>

@@ -16,16 +16,12 @@ const axiosInstance = axios.create({
 });
 
 // Tambahkan token ke header Authorization setiap kali ada permintaan
-
 axiosInstance.interceptors.request.use(
   (config) => {
     if (typeof window !== "undefined") { // Cek apakah berjalan di client
       const token = getAuthToken();
       if (token) {
         config.headers["Authorization"] = `Bearer ${token}`;
-        console.log("Token added to request header:", `Bearer ${token}`);
-      } else {
-        console.log("No token found in localStorage");
       }
     }
     return config;
@@ -41,7 +37,6 @@ export const createPeminjaman = async (peminjamanData) => {
     const response = await axiosInstance.post('/', peminjamanData);
     return response.data;
   } catch (error) {
-    console.error('Error creating peminjaman:', error);
     throw new Error(error.response?.data?.error || 'Error creating peminjaman');
   }
 };
@@ -52,7 +47,6 @@ export const getAllPeminjaman = async () => {
     const response = await axiosInstance.get('/');
     return response.data;
   } catch (error) {
-    console.error('Error fetching peminjaman:', error);
     throw new Error(error.response?.data?.error || 'Error fetching peminjaman');
   }
 };
@@ -97,16 +91,6 @@ export const deletePeminjaman = async (id) => {
   }
 };
 
-// Fungsi untuk membuat booking baru
-export const createBooking = async (bookingData) => {
-  try {
-    const response = await axiosInstance.post('/booking', bookingData);
-    return response.data;
-  } catch (error) {
-    throw new Error(error.response?.data?.error || 'Error creating booking');
-  }
-};
-
 // Fungsi untuk menyetujui booking
 export const approveBooking = async (id) => {
   try {
@@ -124,5 +108,56 @@ export const returnBook = async (id) => {
     return response.data;
   } catch (error) {
     throw new Error(error.response?.data?.error || 'Error returning book');
+  }
+};
+
+// Fungsi untuk membuat booking baru
+export const createBooking = async (bookingData) => {
+  try {
+    const response = await axiosInstance.post('/booking', bookingData);
+    return response.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.error || 'Error creating booking');
+  }
+};
+
+
+// Fungsi untuk mengambil daftar booking berdasarkan ID User
+export const getBookingByUserId = async (idUser) => {
+  try {
+    const response = await axiosInstance.get(`/booking/user/${idUser}`);
+    return response.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.error || 'Error fetching booking');
+  }
+};
+
+// Fungsi untuk mengambil semua booking yang pending
+export const getAllBookings = async () => {
+  try {
+    const response = await axiosInstance.get('/booking');
+    return response.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.error || 'Error fetching bookings');
+  }
+};
+
+// Fungsi untuk mendapatkan booking berdasarkan ID
+export const getBookingById = async (id) => {
+  try {
+    const response = await axiosInstance.get(`/booking/${id}`);
+    return response.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.error || 'Error fetching booking');
+  }
+};
+
+// Fungsi untuk menghapus booking
+export const deleteBooking = async (id) => {
+  try {
+    const response = await axiosInstance.delete(`/booking/${id}`);
+    return response.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.error || 'Error deleting booking');
   }
 };

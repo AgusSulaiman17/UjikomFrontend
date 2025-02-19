@@ -1,6 +1,6 @@
 export default {
   head: {
-    title: 'frontend',
+    title: 'Website Peminjaman Buku',
     htmlAttrs: {
       lang: 'en'
     },

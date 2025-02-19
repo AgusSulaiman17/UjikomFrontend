@@ -5,7 +5,7 @@
         <h3>Buku Yang Ada Disini</h3>
       </div>
       <div class="col-auto">
-        <nuxt-link to="/ListBuku" class="btn-custom">Lihat Semua <b-icon-eye></b-icon-eye></nuxt-link>
+        <nuxt-link to="/user/listBuku" class="btn-custom">Lihat Semua <b-icon-eye></b-icon-eye></nuxt-link>
       </div>
     </div>
     <div class="slider">

@@ -2,17 +2,20 @@
 <div class="">
   <AppNavbar />
   <Slider class="mt-6"/>
+  <BukuPopuler class="mt-6" />
 </div>
 </template>
 
 <script>
 import AppNavbar from '~/components/AppNavbar.vue';
+import BukuPopuler from '~/components/BukuPopuler.vue';
 import Slider from '~/components/Slider.vue';
 
 export default {
   components :{
     Slider,
-    AppNavbar
+    AppNavbar,
+    BukuPopuler
   },
   layout:'blank'
 }

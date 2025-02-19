@@ -1,7 +1,7 @@
 <template>
   <div class="">
-    <HeroLanding />
-    <AppNavbar class="mt-6"/>
+    <AppNavbar />
+    <HeroLanding class="mt-6"/>
   </div>
 </template>
 

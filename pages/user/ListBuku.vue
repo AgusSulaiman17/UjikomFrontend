@@ -1,7 +1,8 @@
 <template>
   <div class="container ">
     <AppNavbar />
-    <div class="row mb-4 mt-6">
+    <h2 class="text-center mt-6 mb-5">Daftar Buku</h2>
+    <div class="row mb-5">
       <div class="col-md-3">
         <input type="text" v-model="searchQuery" placeholder="Cari buku..." class="form-control filter-item" />
       </div>
@@ -24,14 +25,14 @@
       <div class="col-md-3 mb-3 ">
         <select v-model="selectedKategori" class="form-control filter-item">
           <option value="">Semua Kategori</option>
-          <option v-for="kategori in kategoriList" :key="kategori.id_kategori" :value="kategori.id_kategori">
+          <option v-for="kategori in kategoriList" :key="kategori.id" :value="kategori.id">
             {{ kategori.kategori }}
           </option>
         </select>
       </div>
     </div>
 
-    <div class="row ">
+    <div class="row mt-4">
       <div v-if="error" class="alert alert-danger">{{ error }}</div>
       <div v-if="filteredBuku.length === 0 && !error" class="alert alert-info">Tidak ada buku untuk ditampilkan.</div>
 
@@ -85,14 +86,26 @@ export default {
   },
   computed: {
     filteredBuku() {
-      return this.bukuList
-        .filter((buku) =>
-          buku.judul.toLowerCase().includes(this.searchQuery.toLowerCase())
-        )
-        .filter((buku) => (this.selectedPenulis ? buku.id_penulis === parseInt(this.selectedPenulis) : true))
-        .filter((buku) => (this.selectedPenerbit ? buku.id_penerbit === parseInt(this.selectedPenerbit) : true))
-        .filter((buku) => (this.selectedKategori ? buku.id_kategori === parseInt(this.selectedKategori) : true));
-    },
+    console.log("Kategori yang dipilih:", this.selectedKategori);
+    return this.bukuList
+      .filter((buku) => {
+        console.log("Buku:", buku);
+        return buku.judul.toLowerCase().includes(this.searchQuery.toLowerCase());
+      })
+      .filter((buku) => {
+        console.log("Cek Penulis:", buku.id_penulis, "==", this.selectedPenulis);
+        return this.selectedPenulis ? buku.id_penulis === parseInt(this.selectedPenulis) : true;
+      })
+      .filter((buku) => {
+        console.log("Cek Penerbit:", buku.id_penerbit, "==", this.selectedPenerbit);
+        return this.selectedPenerbit ? buku.id_penerbit === parseInt(this.selectedPenerbit) : true;
+      })
+      .filter((buku) => {
+  console.log("Cek Kategori:", buku.kategori?.id, "==", this.selectedKategori);
+  return this.selectedKategori ? buku.kategori?.id == this.selectedKategori : true;
+})
+
+  },
   },
   methods: {
     async fetchData(apiFunc, targetList, errorMessage) {
@@ -111,6 +124,10 @@ export default {
     await this.fetchData(getAllPenulis, "penulisList", "Gagal memuat data penulis.");
     await this.fetchData(getAllPenerbit, "penerbitList", "Gagal memuat data penerbit.");
     await this.fetchData(getAllKategori, "kategoriList", "Gagal memuat data kategori.");
+
+    // 🔎 Debugging: Cek apakah kategori ada dalam setiap buku
+    console.log("Data Buku:", this.bukuList);
+    console.log("Data Kategori:", this.kategoriList);
   },
 };
 </script>
@@ -126,8 +143,9 @@ export default {
   width: 100%;
   padding: 2px;
   background: #fff;
-  border: 4px solid #000;
-  box-shadow: 5px 5px 0 #000;
+  border: 3px solid #000;
+  border-top: none;
+  border-left: none;
   font-size: 16px;
   font-weight: bold;
   transition: all 0.3s ease;
@@ -146,7 +164,7 @@ export default {
   height: 350px;
   padding: 20px;
   background: #fff;
-  border: 6px solid #000;
+  border: 3px solid #000;
   box-shadow: 4px 4px 0 #000;
   transform: rotate(-2deg);
   transition: all 0.3s ease;

@@ -1,22 +1,41 @@
 <template>
-  <b-modal v-model="localShowModal" :title="isEditMode ? 'Edit Peminjaman' : 'Tambah Peminjaman'" size="lg"
-    @ok="submitForm">
+  <b-modal v-model="localShowModal" :title="isEditMode ? 'Edit Peminjaman' : 'Tambah Peminjaman'" size="lg" @ok="submitForm">
     <b-form @submit.prevent="submitForm">
-      <b-form-group label="Pilih User" label-for="userSelect">
-        <b-form-select id="userSelect" v-model="form.id_user" :options="userOptions" required>
-          <template #first>
-            <option :value="null" disabled>Pilih User</option>
-          </template>
-        </b-form-select>
+
+      <!-- Pencarian dan Pilihan User -->
+      <b-form-group label="Cari User (Nama atau Email)">
+        <b-form-input v-model="searchUser"
+          @focus="showUserDropdown = true" @blur="hideDropdown('user')" />
+        <b-list-group v-if="showUserDropdown">
+          <b-list-group-item
+            v-for="user in filteredUsers"
+            :key="user.value"
+            @mousedown="selectUser(user)">
+            {{ user.text }}
+          </b-list-group-item>
+          <b-list-group-item v-if="filteredUsers.length === 0" disabled>
+            User tidak tersedia
+          </b-list-group-item>
+        </b-list-group>
       </b-form-group>
 
-      <b-form-group label="Pilih Buku" label-for="bookSelect">
-        <b-form-select id="bookSelect" v-model="form.id_buku" :options="bookOptions" required>
-          <template #first>
-            <option :value="null" disabled>Pilih Buku</option>
-          </template>
-        </b-form-select>
+      <!-- Pencarian dan Pilihan Buku -->
+      <b-form-group label="Cari Buku (Judul)">
+        <b-form-input v-model="searchBook"
+          @focus="showBookDropdown = true" @blur="hideDropdown('book')" />
+        <b-list-group v-if="showBookDropdown">
+          <b-list-group-item
+            v-for="book in filteredBooks"
+            :key="book.value"
+            @mousedown="selectBook(book)">
+            {{ book.text }}
+          </b-list-group-item>
+          <b-list-group-item v-if="filteredBooks.length === 0" disabled>
+            Buku tidak tersedia
+          </b-list-group-item>
+        </b-list-group>
       </b-form-group>
+
     </b-form>
   </b-modal>
 </template>
@@ -45,38 +64,49 @@ export default {
       form: {},
       userOptions: [],
       bookOptions: [],
+      searchUser: "",
+      searchBook: "",
+      showUserDropdown: false,
+      showBookDropdown: false,
       localShowModal: this.showModal, // Menyimpan nilai showModal ke data lokal
     };
   },
-  watch: {
-  showModal(newVal) {
-    if (newVal) {
-      this.initializeForm();
-    }
-    this.localShowModal = newVal;
-  },
-  localShowModal(newVal) {
-    this.$emit('update:showModal', newVal);
-  }
-},
   computed: {
     isEditMode() {
       return this.form.id_peminjaman !== null;
     },
+    filteredUsers() {
+      if (!this.searchUser) return this.userOptions;
+      return this.userOptions.filter(user => user.text.toLowerCase().includes(this.searchUser.toLowerCase()));
+    },
+    filteredBooks() {
+      if (!this.searchBook) return this.bookOptions;
+      return this.bookOptions.filter(book => book.text.toLowerCase().includes(this.searchBook.toLowerCase()));
+    }
+  },
+  watch: {
+    showModal(newVal) {
+      if (newVal) {
+        this.initializeForm();
+      }
+      this.localShowModal = newVal;
+    },
+    localShowModal(newVal) {
+      this.$emit('update:showModal', newVal);
+    }
   },
   methods: {
     async fetchUsers() {
-  try {
-    const response = await getAllUsers();
-    console.log("Users fetched:", response.data);  // Log untuk memeriksa data yang diterima
-    this.userOptions = response.data.map(user => ({
-      value: user.id,  // Gunakan 'id' sesuai dengan data yang diterima
-      text: user.name,  // Gunakan 'name' sesuai dengan data yang diterima
-    }));
-  } catch (error) {
-    console.error("Gagal mengambil data user:", error);
-  }
-},
+      try {
+        const response = await getAllUsers();
+        this.userOptions = response.data.map(user => ({
+          value: user.id,
+          text: `${user.name} (${user.email})`, // Menampilkan nama dan email
+        }));
+      } catch (error) {
+        console.error("Gagal mengambil data user:", error);
+      }
+    },
     async fetchBooks() {
       try {
         const response = await getAllBuku();
@@ -95,19 +125,34 @@ export default {
         id_buku: this.peminjamanData.id_buku ? Number(this.peminjamanData.id_buku) : null,
       };
     },
+    selectUser(user) {
+      this.form.id_user = user.value;
+      this.searchUser = user.text;
+      this.showUserDropdown = false;
+    },
+    selectBook(book) {
+      this.form.id_buku = book.value;
+      this.searchBook = book.text;
+      this.showBookDropdown = false;
+    },
+    hideDropdown(type) {
+      setTimeout(() => {
+        if (type === "user") this.showUserDropdown = false;
+        if (type === "book") this.showBookDropdown = false;
+      }, 200);
+    },
     submitForm() {
-  if (!this.form.id_user || !this.form.id_buku) {
-    this.$toast.error("User dan Buku harus dipilih!");
-    return;
-  }
+      if (!this.form.id_user || !this.form.id_buku) {
+        this.$toast.error("User dan Buku harus dipilih!");
+        return;
+      }
 
-  const formData = new FormData();
-  formData.append("id_user", this.form.id_user);
-  formData.append("id_buku", this.form.id_buku);
+      const formData = new FormData();
+      formData.append("id_user", this.form.id_user);
+      formData.append("id_buku", this.form.id_buku);
 
-  this.$emit("submit", formData);
-}
-
+      this.$emit("submit", formData);
+    }
   },
   mounted() {
     this.fetchUsers();

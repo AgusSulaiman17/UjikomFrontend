@@ -2,7 +2,7 @@
   <div class="">
   <Header />
   <div class="mt-5">
-    <div class="cards-container mt-5">
+    <div class="cards-container">
       <div v-for="(item, index) in items" :key="index" class="card feature-card">
         <div class="card-details">
           <p class="text-title">

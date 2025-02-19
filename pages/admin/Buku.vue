@@ -91,6 +91,7 @@ export default {
         { key: "kategori", label: "Kategori", sortable: true },
         { key: "isbn", label: "ISBN", sortable: true },
         { key: "jumlah", label: "Jumlah", sortable: true },
+        { key: "deskripsi", label: "Deskripsi", sortable: true },
         { key: "actions", label: "Aksi" },
       ],
     };
@@ -172,23 +173,24 @@ export default {
       this.bukuToDelete = null;
     },
     async fetchBuku() {
-      try {
-        const response = await getAllBuku();
-        this.buku = response.data.map((b) => ({
-          id_buku: b.id_buku,
-          judul: b.judul,
-          penulis: b.penulis ? b.penulis.nama : "Tidak diketahui",
-          penerbit: b.penerbit ? b.penerbit.nama : "Tidak diketahui",
-          kategori: b.kategori ? b.kategori.kategori : "Tidak ada",
-          isbn: b.isbn,
-          jumlah: b.jumlah,
-          status: b.status,
-          gambar: b.gambar ? `http://localhost:8080/${b.gambar}` : "",
-        }));
-      } catch (error) {
-        console.error("Error fetching buku:", error);
-      }
-    },
+  try {
+    const response = await getAllBuku();
+    this.buku = response.data.map((b) => ({
+      id_buku: b.id_buku,
+      judul: b.judul,
+      penulis: b.penulis ? b.penulis.nama : "Tidak diketahui",
+      penerbit: b.penerbit ? b.penerbit.nama : "Tidak diketahui",
+      kategori: b.kategori ? b.kategori.kategori : "Tidak ada",
+      isbn: b.isbn,
+      jumlah: b.jumlah,
+      status: b.status,
+      gambar: b.gambar ? `http://localhost:8080/${b.gambar}` : "",
+      deskripsi: b.deskripsi || 'Tidak ada deskripsi',
+    }));
+  } catch (error) {
+    console.error("Error fetching buku:", error);
+  }
+}
   },
 };
 </script>

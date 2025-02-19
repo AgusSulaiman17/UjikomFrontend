@@ -18,9 +18,30 @@
           <h2 class="card-title text-uppercase font-weight-bold">{{ buku.judul || "Judul Buku" }}</h2>
           <p><strong>Penulis:</strong> {{ buku.penulis?.nama || "Tidak diketahui" }}</p>
           <p><strong>Penerbit:</strong> {{ buku.penerbit?.nama || "Tidak diketahui" }}</p>
-          <p><strong>Kategori:</strong> {{ buku.kategori?.nama || "Tidak diketahui" }}</p>
+          <p><strong>Kategori:</strong> {{ buku.kategori?.kategori || "Tidak diketahui" }}</p>
+          <p><strong>Jumlah:</strong> {{ buku.jumlah || "Tidak diketahui" }}</p>
           <p class="text-muted">{{ buku.deskripsi || "Tidak ada deskripsi yang tersedia." }}</p>
+
+          <!-- Tombol Booking -->
+          <button class="btn btn-success mt-3 w-50" @click="bookingBuku" :disabled="loadingBooking">
+            {{ loadingBooking ? "Memproses..." : "Booking Buku" }}
+          </button>
+
+          <!-- Tombol Tambah/Hapus Favorit -->
+          <button
+            class="btn mt-3 w-50 favorit-btn"
+            :class="{ 'btn-danger': isFavorit, 'btn-outline-danger': !isFavorit }"
+            @click="toggleFavorit"
+          >
+            ♥ {{ isFavorit ? "Hapus dari Favorit" : "Tambah ke Favorit" }}
+          </button>
+
+          <!-- Tombol Kembali -->
           <button class="btn btn-dark mt-3 w-50" @click="$router.push('/user/listbuku')">Kembali</button>
+
+          <!-- Notifikasi -->
+          <div v-if="successMessage" class="alert alert-success mt-3">{{ successMessage }}</div>
+          <div v-if="errorMessage" class="alert alert-danger mt-3">{{ errorMessage }}</div>
         </div>
       </div>
     </div>
@@ -29,19 +50,25 @@
 
 <script>
 import { getBukuById } from "@/api/buku";
+import { createBooking } from "@/api/peminjaman";
+import { addFavorit, getFavoritByUser, deleteFavorit } from "@/api/favorit";
 import AppNavbar from "~/components/AppNavbar.vue";
 
 export default {
-  layout:'blank',
+  layout: "blank",
   name: "DetailBuku",
-  components:{
-    AppNavbar
+  components: {
+    AppNavbar,
   },
   data() {
     return {
       buku: {},
       error: null,
       loading: true,
+      loadingBooking: false,
+      isFavorit: false, // Menyimpan status favorit
+      successMessage: "",
+      errorMessage: "",
     };
   },
   async mounted() {
@@ -59,12 +86,110 @@ export default {
         throw new Error("Buku tidak ditemukan.");
       }
       this.buku = response.data;
+
+      // Cek apakah buku sudah ada di favorit
+      this.checkFavorit();
     } catch (error) {
       this.error = error.message || "Gagal memuat detail buku.";
       console.error("Error:", error);
     } finally {
       this.loading = false;
     }
+  },
+  methods: {
+    async bookingBuku() {
+      this.successMessage = "";
+      this.errorMessage = "";
+      this.loadingBooking = true;
+
+      const user = JSON.parse(localStorage.getItem("user"));
+      if (!user || !user.id) {
+        this.errorMessage = "User belum login!";
+        this.$toast.error("User belum login!");
+        this.loadingBooking = false;
+        return;
+      }
+
+      const idUser = Number(user.id);
+      const idBuku = Number(this.buku.id_buku);
+
+      if (isNaN(idBuku)) {
+        this.errorMessage = "ID Buku tidak valid!";
+        this.$toast.error("ID Buku tidak valid!");
+        this.loadingBooking = false;
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append("id_user", idUser);
+      formData.append("id_buku", idBuku);
+
+      try {
+        const response = await createBooking(formData);
+        this.successMessage = response.message || "Booking berhasil!";
+        this.$toast.success("Booking berhasil!");
+
+        setTimeout(() => {
+          this.$router.push("/user/pinjaman");
+        }, 1500);
+      } catch (error) {
+        this.errorMessage = error.message || "Gagal melakukan booking.";
+        this.$toast.error(this.errorMessage);
+      } finally {
+        this.loadingBooking = false;
+      }
+    },
+    async toggleFavorit() {
+      const user = JSON.parse(localStorage.getItem("user"));
+      if (!user || !user.id) {
+        this.$toast.error("User belum login!");
+        return;
+      }
+
+      const idUser = Number(user.id);
+      const idBuku = Number(this.buku.id_buku);
+
+      if (isNaN(idBuku)) {
+        this.$toast.error("ID Buku tidak valid!");
+        return;
+      }
+
+      try {
+        if (this.isFavorit) {
+          await deleteFavorit(idUser, idBuku);
+          this.isFavorit = false;
+          this.$toast.success("Dihapus dari favorit!");
+        } else {
+          await addFavorit({ id_user: idUser, id_buku: idBuku });
+          this.isFavorit = true;
+          this.$toast.success("Ditambahkan ke favorit!");
+        }
+      } catch (error) {
+        this.$toast.error(error.message || "Gagal memperbarui favorit.");
+      }
+    },
+    async checkFavorit() {
+  const user = JSON.parse(localStorage.getItem("user"));
+  if (!user || !user.id) return;
+
+  const idUser = Number(user.id);
+
+  try {
+    const response = await getFavoritByUser(idUser);
+    console.log("Respons API Favorit:", response); // Tambahkan log ini
+
+    const favoritList = response.data || response; // Pastikan mengambil data yang benar
+    if (!Array.isArray(favoritList)) {
+      console.error("Error: favoritList bukan array!", favoritList);
+      return;
+    }
+
+    this.isFavorit = favoritList.some((item) => item.id_buku === this.buku.id_buku);
+  } catch (error) {
+    console.error("Gagal memeriksa status favorit:", error);
+  }
+}
+
   },
 };
 </script>
@@ -86,5 +211,15 @@ export default {
 .img-fluid {
   max-height: 350px;
   object-fit: cover;
+}
+
+/* Tombol Favorit */
+.favorit-btn {
+  font-size: 18px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
 }
 </style>

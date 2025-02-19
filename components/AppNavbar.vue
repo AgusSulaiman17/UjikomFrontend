@@ -27,12 +27,17 @@
             </b-nav-item>
             <b-nav-item v-if="user.role === 'user'">
               <nuxt-link to="/user/listbuku" class="nav-link-animated" exact-active-class="active-link">
-                <BIconBookmarks /> List Buku
+                <BIconBookmarks /> Daftar Buku
               </nuxt-link>
             </b-nav-item>
             <b-nav-item v-if="user.role === 'user' || user.role === 'petugas'">
               <nuxt-link to="/user/Pinjaman" class="nav-link-animated" exact-active-class="active-link">
-                <BIconCardChecklist /> Pinjaman
+                <BIconCardChecklist /> Booking
+              </nuxt-link>
+            </b-nav-item>
+            <b-nav-item v-if="user.role === 'user' || user.role === 'petugas'">
+              <nuxt-link to="/user/favorite" class="nav-link-animated" exact-active-class="active-link">
+                <BIconStarHalf/> Favorite
               </nuxt-link>
             </b-nav-item>
           </b-navbar-nav>
@@ -47,7 +52,7 @@
               <b-dropdown-item @click="$router.push(`/Profile/${user.id_user}`)">
                 Profile <b-icon-person></b-icon-person>
               </b-dropdown-item>
-              <b-dropdown-item @click.prevent="logout" :disabled="isLoading">
+              <b-dropdown-item  @click.prevent="logout">
                 <span v-if="!isLoading">Sign Out</span>
                 <span v-else class="spinner"></span>
                 <b-icon-box-arrow-right></b-icon-box-arrow-right>
@@ -62,7 +67,7 @@
 
 
 <script>
-import { BIconBookHalf, BIconBookmarks, BIconCardChecklist, BIconHouse } from 'bootstrap-vue';
+import { BIconStarHalf } from 'bootstrap-vue';
 import NotificationModal from './NotificationModal.vue';
 
 export default {
@@ -101,7 +106,9 @@ export default {
       this.lastScrollTop = currentScroll <= 0 ? 0 : currentScroll;
     },
     logout() {
-      this.showLogoutConfirmationModal = true;
+      localStorage.removeItem("user");
+      localStorage.removeItem("token");
+      this.$router.push("/login");
     },
     confirmLogout() {
       this.isLoading = true;
