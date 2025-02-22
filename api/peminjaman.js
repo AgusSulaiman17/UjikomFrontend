@@ -91,6 +91,16 @@ export const deletePeminjaman = async (id) => {
   }
 };
 
+// Fungsi untuk menghapus peminjaman
+export const deletePeminjamanByUser = async (id) => {
+  try {
+    const response = await axiosInstance.delete(`/byuser/${id}`);
+    return response.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.error || 'Error deleting peminjaman');
+  }
+};
+
 // Fungsi untuk menyetujui booking
 export const approveBooking = async (id) => {
   try {

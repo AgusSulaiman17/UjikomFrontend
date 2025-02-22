@@ -2,6 +2,10 @@
   <div class="container ">
     <AppNavbar />
     <h2 class="text-center mt-6 mb-5">Daftar Buku</h2>
+    <div v-if="isLoading" class="text-center my-4">
+      <b-spinner label="Loading..."></b-spinner>
+      <p>Sedang memuat data...</p>
+    </div>
     <div class="row mb-5">
       <div class="col-md-3">
         <input type="text" v-model="searchQuery" placeholder="Cari buku..." class="form-control filter-item" />
@@ -93,15 +97,12 @@ export default {
         return buku.judul.toLowerCase().includes(this.searchQuery.toLowerCase());
       })
       .filter((buku) => {
-        console.log("Cek Penulis:", buku.id_penulis, "==", this.selectedPenulis);
         return this.selectedPenulis ? buku.id_penulis === parseInt(this.selectedPenulis) : true;
       })
       .filter((buku) => {
-        console.log("Cek Penerbit:", buku.id_penerbit, "==", this.selectedPenerbit);
         return this.selectedPenerbit ? buku.id_penerbit === parseInt(this.selectedPenerbit) : true;
       })
       .filter((buku) => {
-  console.log("Cek Kategori:", buku.kategori?.id, "==", this.selectedKategori);
   return this.selectedKategori ? buku.kategori?.id == this.selectedKategori : true;
 })
 

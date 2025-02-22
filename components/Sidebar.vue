@@ -29,7 +29,7 @@
         <!-- Dropdown Buku -->
         <li class="dropdown-wrapper">
           <a href="#" @click.prevent="toggleDropdown('buku')" class="dropdown-btn">
-            <BIconBook /> Buku <span :class="dropdowns.buku ? 'rotate' : ''">▼</span>
+            <BIconBook /> Data Buku <span :class="dropdowns.buku ? 'rotate' : ''">▼</span>
           </a>
           <ul v-show="dropdowns.buku" class="dropdown">
             <li>

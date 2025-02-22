@@ -1,208 +1,136 @@
 <template>
-  <div class="pinjaman">
+  <div class="Pinjaman">
     <AppNavbar />
+    <div class="container mt-6">
+      <h2 class="mb-3 text-center">Daftar Peminjaman</h2>
 
-    <div class="peminjaman container mt-6">
-      <h2 class="text-center mb-4">Daftar Booking Anda</h2>
+      <!-- Tampilkan loading saat data sedang diambil -->
+      <div v-if="loading" class="alert alert-info text-center">Memuat data...</div>
 
-      <div v-if="loading" class="text-center">
-        <div class="spinner-border text-primary" role="status">
-          <span class="visually-hidden">Loading...</span>
-        </div>
-      </div>
+      <!-- Tampilkan error jika terjadi kesalahan -->
+      <div v-if="error" class="alert alert-danger text-center">{{ error }}</div>
 
-      <div v-if="errorMessage" class="alert alert-danger text-center">{{ errorMessage }}</div>
-
-      <div v-if="bookings.length > 0" class="d-flex flex-wrap justify-content-center">
-        <div v-for="booking in bookings" :key="booking.id_peminjaman" class="card custom-card m-3">
-          <div class="card__content">
-            <p class="card__title">{{ booking.buku.judul }}</p>
-            <p v-if="booking.status === 'pending'" class="text-ijomuda">Menunggu konfirmasi</p>
+      <!-- Jika ada data peminjaman -->
+      <div v-if="peminjaman.length">
+        <div v-for="(item) in peminjaman" :key="item.id_peminjaman" class="peminjaman-item">
+          <div class="card shadow-sm">
+            <div class="row no-gutters">
+              <div class="col-md-3 d-flex justify-content-center align-items-center">
+                <img
+                  :src="(item.buku?.gambar) ? ((item.buku?.gambar).startsWith('http') ? (item.buku?.gambar) : `http://localhost:8080/${(item.buku?.gambar)}`) : 'default.jpg'"
+                  :alt="item.judul || 'Gambar Tidak Tersedia'" class="gambar-buku" />
+              </div>
+              <div class="col-md-9">
+                <div class="card-body">
+                  <h5 class="card-title">{{ item.buku ? item.buku.judul : 'Data buku tidak tersedia' }}</h5>
+                  <p class="card-text">
+                    <strong>Tanggal Pinjam:</strong> {{ formatTanggal(item.tanggal_pinjam) }}
+                  </p>
+                  <p class="card-text">
+                    <strong>Tanggal Pengembalian:</strong> {{ hitungTanggalKembali(item.tanggal_pinjam) }}
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
-
-          <img
-            v-if="booking.buku.gambar"
-            :src="booking.buku.gambar.startsWith('http') ? booking.buku.gambar : `http://localhost:8080/${booking.buku.gambar}`"
-            :alt="booking.buku.judul"
-            class="card-img"
-          />
-
-          <button @click="confirmDelete(booking.id_peminjaman)" class="btn btn-danger btn-sm delete-button">
-            Batalkan
-          </button>
         </div>
       </div>
 
-      <div v-else class="text-center text-muted">Tidak ada booking ditemukan.</div>
-
-      <NotificationModal
-        :isVisible="isDeleteModalVisible"
-        :messageTitle="'Konfirmasi Pembatalan'"
-        :messageBody="'Apakah Anda yakin ingin membatalkan booking ini ini?'"
-        @close="closeDeleteModal"
-      >
-        <template #footer>
-          <button @click="deletePeminjaman" class="btn btn-danger">Ya</button>
-          <button @click="closeDeleteModal" class="btn btn-secondary">Tidak</button>
-        </template>
-      </NotificationModal>
+      <!-- Jika tidak ada data -->
+      <div v-else-if="!loading" class="alert alert-warning text-center">Tidak ada peminjaman yang disetujui.</div>
     </div>
   </div>
 </template>
 
 <script>
-import { getBookingByUserId, deleteBooking } from "@/api/peminjaman";
-import AppNavbar from "~/components/AppNavbar.vue";
-import NotificationModal from "@/components/NotificationModal.vue";
+import { getPeminjamanByUserId } from '~/api/peminjaman';
 
 export default {
-  components: {
-    AppNavbar,
-    NotificationModal
-  },
-  layout: "blank",
+  layout: 'blank',
   data() {
     return {
-      bookings: [],
-      loading: true,
-      errorMessage: "",
-      isDeleteModalVisible: false,
-      selectedBookingId: null
+      peminjaman: [],
+      error: null,
+      loading: true
     };
   },
   async mounted() {
-    await this.fetchBookings();
+    await this.ambilDataPeminjaman();
   },
   methods: {
-    async fetchBookings() {
-      const user = JSON.parse(localStorage.getItem("user"));
-      if (!user || !user.id) {
-        this.errorMessage = "User belum login!";
-        this.loading = false;
-        return;
-      }
-
+    async ambilDataPeminjaman() {
       try {
-        const response = await getBookingByUserId(user.id);
-        this.bookings = response.data;
-      } catch (error) {
-        this.errorMessage = error.message || "Gagal mengambil data booking.";
+        const user = JSON.parse(localStorage.getItem('user'));
+        console.log("User dari local storage:", user);
+
+        const idUser = user?.id || '';
+        if (!idUser) throw new Error('User tidak ditemukan di local storage');
+
+        const response = await getPeminjamanByUserId(idUser);
+        console.log("Data peminjaman:", response);
+
+        // Filter hanya menampilkan peminjaman yang statusnya "disetujui"
+        this.peminjaman = Array.isArray(response.data)
+          ? response.data.filter(item => item.status === 'disetujui')
+          : [];
+
+      } catch (err) {
+        this.error = err.message;
       } finally {
         this.loading = false;
       }
     },
-    confirmDelete(id) {
-      this.selectedBookingId = id;
-      this.isDeleteModalVisible = true;
+    formatTanggal(tanggal) {
+      return new Date(tanggal).toLocaleDateString('id-ID', {
+        day: '2-digit',
+        month: 'long',
+        year: 'numeric'
+      });
     },
-    closeDeleteModal() {
-      this.isDeleteModalVisible = false;
-      this.selectedBookingId = null;
-    },
-    async deletePeminjaman() {
-      if (!this.selectedBookingId) return;
-
-      try {
-        await deleteBooking(this.selectedBookingId);
-        this.bookings = this.bookings.filter(b => b.id_peminjaman !== this.selectedBookingId);
-
-        this.$toast.success("Booking berhasil dibatalkan!");
-      } catch (error) {
-        this.$toast.error(error.message || "Gagal menghapus booking!");
-      } finally {
-        this.closeDeleteModal();
-      }
+    hitungTanggalKembali(tanggalPinjam) {
+      const tanggal = new Date(tanggalPinjam);
+      tanggal.setDate(tanggal.getDate() + 5); // Tambah 5 hari
+      return this.formatTanggal(tanggal);
     }
   }
 };
 </script>
 
+
 <style scoped>
+/* Container Styling */
 .container {
-  max-width: 1400px;
+  max-width: 1200px;
 }
 
-h2 {
-  font-weight: bold;
-  color: #343a40;
+/* Style untuk setiap item peminjaman */
+.peminjaman-item {
+  margin-bottom: 15px;
 }
 
-.custom-card {
-  position: relative;
-  width: 300px;
-  height: 200px;
-  background-color: #f2f2f2;
+.card {
+  border: none;
   border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   overflow: hidden;
-  perspective: 1000px;
-  border: 3px solid #000;
-  box-shadow: 6px 6px 0 #000;
-  transition: transform 0.3s ease;
+  transition: transform 0.2s ease-in-out;
 }
 
-.custom-card:hover {
-  transform: scale(1.05);
+.card:hover {
+  transform: scale(1.02);
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.15);
 }
 
-.custom-card:hover .card__content {
-  transform: translateY(-100%);
+.gambar-buku {
+  width: 100px;
+  height: 150px;
+  object-fit: cover;
+  border-radius: 5px;
 }
 
-.custom-card:hover .card-img {
-  transform: translateY(0);
-}
-
-.card-img {
-  position: absolute;
-  padding: 5px;
-  width: 200px;
-  height: 100px;
-  transform: translateY(100%);
-  transition: transform 0.5s ease-in-out;
-}
-
-
-.card__content {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  padding: 20px;
-  box-sizing: border-box;
-  background-color: #f2f2f2;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
-  transition: transform 0.5s ease-in-out;
-}
-
-.delete-button {
-  position: absolute;
-  bottom: 10px;
-  right: 10px;
-  opacity: 0;
-  transition: opacity 0.3s ease-in-out;
-}
-
-.custom-card:hover .delete-button {
-  opacity: 1;
-}
-
-.card__title {
-  font-size: 18px;
-  color: #333;
-  font-weight: 700;
-}
-
-.text-warning {
-  font-weight: bold;
-}
-
-.text-muted {
-  font-style: italic;
+/* Status Styling */
+.badge {
+  padding: 5px 10px;
+  font-size: 14px;
+  border-radius: 5px;
 }
 </style>
