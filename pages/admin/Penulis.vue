@@ -14,6 +14,9 @@
 
       <b-table striped hover bordered responsive :items="paginatedPenulis" :fields="fields"
         class="bg-light table-hover card-shadow">
+        <template #cell(index)="data">
+          {{ (currentPage - 1) * perPage + data.index + 1 }}
+        </template>
         <template #cell(actions)="data">
           <b-button variant="primary" size="sm" @click="openEditModal(data.item)" class="btn bg-kuning">
             <b-icon-pencil></b-icon-pencil>
@@ -79,6 +82,7 @@ export default {
       isDeleteModalVisible: false,
       penulisToDelete: null,
       fields: [
+      { key: "index", label: "No" },
         { key: "nama", label: "Nama Penulis", sortable: true },
         { key: "actions", label: "Aksi" },
       ],
@@ -122,7 +126,8 @@ export default {
         this.showModal = false;
         await this.fetchPenulis();
       } catch (error) {
-        this.$toast.error("Terjadi kesalahan. Silakan coba lagi!");
+        const errorMessage = error.message || "Terjadi kesalahan. Silakan coba lagi!";
+        this.$toast.error(errorMessage);
       }
     },
     async deletePenulis() {
@@ -156,6 +161,10 @@ export default {
       this.isDeleteModalVisible = false;
       this.penulisToDelete = null;
     },
+    closeModal() {
+    this.showModal = false;
+    this.currentPenulis = { id: null, nama: "" }; // Reset data modal
+  },
     async fetchPenulis() {
       try {
         const data = await getAllPenulis();

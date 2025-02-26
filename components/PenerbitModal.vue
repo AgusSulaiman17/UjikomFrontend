@@ -4,7 +4,7 @@
       :title="isEditMode ? 'Edit Penerbit' : 'Tambah Penerbit'"
       size="lg"
       @ok="submitForm"
-      @update:showModal="updateShowModal"
+       @hide="closeModal"
     >
       <b-form @submit.prevent="submitForm">
         <b-form-group label="Nama Penerbit" label-for="nama">
@@ -58,12 +58,12 @@
       },
     },
     methods: {
-      updateShowModal(value) {
-        this.$emit("update:showModal", value);
-      },
       submitForm() {
         this.$emit("submit", this.form);
       },
+      closeModal() {
+      this.$emit("update:showModal", false);
+    },
     },
   };
   </script>

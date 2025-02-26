@@ -13,6 +13,9 @@
     </b-button>
 
       <b-table :items="buku" :fields="fields" class="card-shadow">
+        <template #cell(index)="data">
+          {{ (currentPage - 1) * perPage + data.index + 1 }}
+        </template>
         <template #cell(gambar)="data">
           <b-img v-if="data.item.gambar" :src="data.item.gambar" alt="Gambar Buku" width="50" height="70" />
           <span v-else>Tidak ada gambar</span>
@@ -84,6 +87,7 @@ export default {
       isDeleteModalVisible: false,
       bukuToDelete: null,
       fields: [
+      { key: "index", label: "No" },
         { key: "gambar", label: "Gambar" },
         { key: "judul", label: "Judul Buku", sortable: true },
         { key: "penulis", label: "Penulis", sortable: true },
@@ -142,7 +146,8 @@ export default {
         this.showModal = false;
         await this.fetchBuku();
       } catch (error) {
-        this.$toast.error("Terjadi kesalahan. Silakan coba lagi!");
+        const errorMessage = error.message || "Terjadi kesalahan. Silakan coba lagi!";
+        this.$toast.error(errorMessage);
       }
     },
     async deleteBuku() {

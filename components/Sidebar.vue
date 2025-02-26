@@ -6,28 +6,37 @@
         :src="user.image.startsWith('http') ? user.image : `http://localhost:8080/${user.image}`"
         :alt="user.name"
         class="profile-img"
+        @click="$router.push({ name: 'profile', params: { id: user.id } })"
       />
       <h2 class="user-name">{{ user.name }}</h2>
     </div>
     <nav>
       <ul>
         <li>
-          <nuxt-link to="/admin/dashboard" exact-active-class="active">
+          <nuxt-link to="/admin/dashboard" v-if="user.role === 'admin'" exact-active-class="active">
+            <BIconHouse /> Dashboard
+          </nuxt-link>
+          <nuxt-link to="/petugas/dashboard" v-if="user.role === 'petugas'" exact-active-class="active">
             <BIconHouse /> Dashboard
           </nuxt-link>
         </li>
         <li>
-          <nuxt-link to="/admin/users" exact-active-class="active">
+          <nuxt-link to="/admin/users" v-if="user.role === 'admin' || user.role === 'petugas'" exact-active-class="active">
             <BIconPerson /> Pengguna
           </nuxt-link>
         </li>
         <li>
-          <nuxt-link to="/admin/peminjaman" exact-active-class="active">
+          <nuxt-link to="/admin/booking" v-if="user.role === 'admin' || user.role === 'petugas'" exact-active-class="active">
+            <BIconJournalAlbum /> Pemesanan
+          </nuxt-link>
+        </li>
+        <li>
+          <nuxt-link to="/admin/peminjaman" v-if="user.role === 'admin' || user.role === 'petugas'" exact-active-class="active">
             <BIconJournalAlbum /> Peminjaman
           </nuxt-link>
         </li>
         <!-- Dropdown Buku -->
-        <li class="dropdown-wrapper">
+        <li class="dropdown-wrapper" v-if="user.role === 'admin'">
           <a href="#" @click.prevent="toggleDropdown('buku')" class="dropdown-btn">
             <BIconBook /> Data Buku <span :class="dropdowns.buku ? 'rotate' : ''">▼</span>
           </a>
@@ -38,7 +47,7 @@
               </nuxt-link>
             </li>
             <li>
-              <nuxt-link to="/admin/penulis" exact-active-class="active">
+              <nuxt-link to="/admin/penulis"  exact-active-class="active">
                 <BIconPencilSquare /> Penulis
               </nuxt-link>
             </li>
@@ -87,15 +96,21 @@ export default {
     };
   },
   mounted() {
-    try {
-      const storedUser = JSON.parse(localStorage.getItem("user"));
-      if (storedUser) {
-        this.user = storedUser;
-      }
-    } catch (error) {
-      console.error("Error parsing user data:", error);
+  try {
+    const storedUser = JSON.parse(localStorage.getItem("user"));
+    if (storedUser) {
+      this.user = storedUser;
     }
-  },
+  } catch (error) {
+    console.error("Error parsing user data:", error);
+  }
+
+  // Dengarkan event perubahan user dari root instance
+  this.$root.$on("userUpdated", (newUser) => {
+    this.user = newUser;
+  });
+}
+,
   methods: {
     toggleDropdown(menu) {
       this.dropdowns[menu] = !this.dropdowns[menu];
@@ -106,6 +121,15 @@ export default {
       this.$router.push("/login");
     },
   },
+  watch: {
+  user: {
+    handler(newUser) {
+      localStorage.setItem("user", JSON.stringify(newUser));
+    },
+    deep: true,
+  },
+}
+
 };
 </script>
 

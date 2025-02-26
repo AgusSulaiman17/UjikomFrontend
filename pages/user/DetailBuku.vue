@@ -130,8 +130,8 @@ export default {
         this.$toast.success("Booking berhasil!");
 
         setTimeout(() => {
-          this.$router.push("/user/pinjaman");
-        }, 1500);
+          this.$router.push("/user/booking");
+        },);
       } catch (error) {
         this.errorMessage = error.message || "Gagal melakukan booking.";
         this.$toast.error(this.errorMessage);

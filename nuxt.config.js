@@ -51,6 +51,11 @@ export default {
           path: '/detail-buku/:id_buku',
           component: resolve(__dirname, 'pages/user/DetailBuku.vue'),
         },
+        {
+          name: 'profile',
+          path: '/profile/:id',
+          component: resolve(__dirname, 'pages/Profile.vue'),
+        },
       );
     }
   }

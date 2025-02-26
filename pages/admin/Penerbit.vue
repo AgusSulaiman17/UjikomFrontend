@@ -14,6 +14,9 @@
 
       <b-table striped hover bordered responsive :items="paginatedPenerbit" :fields="fields"
         class="bg-light table-hover card-shadow">
+        <template #cell(index)="data">
+          {{ (currentPage - 1) * perPage + data.index + 1 }}
+        </template>
         <template #cell(actions)="data">
           <b-button variant="primary" size="sm" @click="openEditModal(data.item)" class="btn bg-kuning">
             <b-icon-pencil></b-icon-pencil>
@@ -78,6 +81,7 @@ export default {
       isDeleteModalVisible: false,
       penerbitToDelete: null,
       fields: [
+      { key: "index", label: "No" },
         { key: "nama", label: "Nama Penerbit", sortable: true },
         { key: "actions", label: "Aksi" },
       ],
@@ -111,18 +115,20 @@ export default {
     },
     async handleSubmit(penerbitData) {
       try {
-        if (penerbitData.id) {
-          await updatePenerbit(penerbitData.id, { nama: penerbitData.nama });
-          this.$toast.success("Penerbit berhasil diperbarui!");
-        } else {
-          await createPenerbit({ nama: penerbitData.nama });
-          this.$toast.success("Penerbit berhasil ditambahkan!");
-        }
-        this.showModal = false;
-        await this.fetchPenerbit();
-      } catch (error) {
-        this.$toast.error("Terjadi kesalahan. Silakan coba lagi!");
-      }
+  if (penerbitData.id) {
+    await updatePenerbit(penerbitData.id, { nama: penerbitData.nama });
+    this.$toast.success("Penerbit berhasil diperbarui!");
+  } else {
+    await createPenerbit({ nama: penerbitData.nama });
+    this.$toast.success("Penerbit berhasil ditambahkan!");
+  }
+  this.showModal = false;
+  await this.fetchPenerbit();
+} catch (error) {
+  const errorMessage = error.message || "Terjadi kesalahan. Silakan coba lagi!";
+  this.$toast.error(errorMessage);
+}
+
     },
     async deletePenerbit() {
       if (!this.penerbitToDelete) {

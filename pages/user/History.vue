@@ -28,7 +28,7 @@
                   <span class="badge bg-success">Dikembalikan</span>
                 </p>
                 <button class="btn btn-danger mt-2" @click="hapusPeminjaman(item.id_peminjaman)">
-                  Hapus Peminjaman
+                  Hapus Riwayat
                 </button>
               </div>
             </div>

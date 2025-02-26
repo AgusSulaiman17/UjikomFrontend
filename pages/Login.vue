@@ -43,7 +43,11 @@ export default {
         const { token, user } = await loginModule.login(this.email, this.password);
         localStorage.setItem('token', token);
         localStorage.setItem('user', JSON.stringify(user));
-        this.$router.push(user.role === 'admin' ? '/admin/dashboard' : '/user/dashboard');
+        this.$router.push(
+          user.role === 'admin' ? '/admin/dashboard' :
+            user.role === 'petugas' ? '/petugas/dashboard' :
+              '/user/dashboard'
+        );
       } catch (error) {
         if (error.response && error.response.data && error.response.data.message) {
           this.errorMessage = error.response.data.message;
@@ -146,8 +150,8 @@ label {
   transition: all 0.3s ease;
 }
 
-.input:focus + label,
-.input:valid + label {
+.input:focus+label,
+.input:valid+label {
   top: -10px;
   font-size: 12px;
   color: #a8d7b9;
@@ -190,6 +194,7 @@ button:hover {
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }

@@ -1,6 +1,6 @@
 <template>
   <b-modal v-model="showModal" :title="isEditMode ? 'Edit Buku' : 'Tambah Buku'" size="lg" @ok="submitForm"
-    @update:showModal="updateShowModal">
+     @hide="closeModal">
     <b-form @submit.prevent="submitForm">
       <b-form-group label="Judul Buku" label-for="judul">
         <b-form-input id="judul" v-model="form.judul" required></b-form-input>
@@ -43,15 +43,26 @@
       </b-form-group>
 
       <b-form-group label="Gambar Buku" label-for="gambar">
-        <!-- Tampilkan gambar yang sudah ada -->
-        <div v-if="form.gambar && typeof form.gambar === 'string'" class="mb-3">
-          <b-img :src="form.gambar" alt="Gambar Buku" thumbnail width="100" class="mb-2"></b-img>
-          <b-button variant="danger" size="sm" @click="hapusGambar">Hapus Gambar</b-button>
-        </div>
-        <!-- Input untuk mengunggah gambar baru -->
-        <b-form-file id="gambar" @change="handleFileUpload" :placeholder="form.gambar ? 'Ganti gambar...' : 'Pilih gambar...'"
-          :accept="'image/*'"></b-form-file>
-      </b-form-group>
+  <!-- Tampilkan preview gambar -->
+  <div v-if="form.gambar" class="mb-3">
+    <b-img
+      :src="previewGambar || form.gambar"
+      alt="Gambar Buku"
+      thumbnail
+      width="100"
+      class="mb-2">
+    </b-img>
+    <b-button variant="danger" size="sm" @click="hapusGambar">Hapus Gambar</b-button>
+  </div>
+  <!-- Input untuk mengunggah gambar baru -->
+  <b-form-file
+    id="gambar"
+    @change="handleFileUpload"
+    :placeholder="form.gambar ? 'Ganti gambar...' : 'Pilih gambar...'"
+    :accept="'image/*'">
+  </b-form-file>
+</b-form-group>
+
     </b-form>
   </b-modal>
 </template>
@@ -93,6 +104,7 @@ export default {
         isbn: "",
         gambar: null,
       },
+      previewGambar: null,
       penerbitOptions: [],
       penulisOptions: [],
       kategoriOptions: [],
@@ -124,18 +136,26 @@ export default {
     },
   },
   methods: {
-    updateShowModal(value) {
-      this.$emit("update:showModal", value);
+    closeModal() {
+      this.$emit("update:showModal", false);
     },
     handleFileUpload(event) {
-      const file = event.target.files[0];
-      if (file) {
-        this.form.gambar = file;
-      }
-    },
-    hapusGambar() {
-      this.form.gambar = null;
-    },
+    const file = event.target.files[0];
+    if (file) {
+      this.form.gambar = file;
+
+      // Buat preview gambar
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        this.previewGambar = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+  },
+  hapusGambar() {
+    this.form.gambar = null;
+    this.previewGambar = null;
+  },
     async fetchPenerbit() {
       try {
         const response = await getAllPenerbit();

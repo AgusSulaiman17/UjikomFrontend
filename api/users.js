@@ -52,12 +52,18 @@ export const getAllUsers = async () => {
 // Fungsi untuk mengambil pengguna berdasarkan ID
 export const getUserById = async (id) => {
   try {
+    console.log("Mengambil user dengan ID:", id); // Debugging
+
     const response = await axiosInstance.get(`/${id}`);
+    console.log("Response API:", response.data); // Debugging
+
     return response.data;
   } catch (error) {
-    throw new Error(error.response?.data?.error || 'Error fetching user');
+    console.error("Error response:", error.response?.data || error.message);
+    throw new Error(error.response?.data?.error || "Error fetching user");
   }
 };
+
 
 // Fungsi untuk memperbarui pengguna
 export const updateUser = async (id, userData) => {

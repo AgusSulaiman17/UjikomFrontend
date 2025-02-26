@@ -1,20 +1,24 @@
 <template>
   <div class="kategori">
     <Header />
-  <div class="container mt-4">
+    <div class="container mt-4">
 
-    <!-- Input Pencarian -->
-    <b-form-group class="mb-3 card-shadow">
-      <b-form-input v-model="searchQuery" placeholder="Cari berdasarkan nama kategori..." debounce="300" size="lg"
-        class="shadow-sm"></b-form-input>
-    </b-form-group>
+      <!-- Input Pencarian -->
+      <b-form-group class="mb-3 card-shadow">
+        <b-form-input v-model="searchQuery" placeholder="Cari berdasarkan nama kategori..." debounce="300" size="lg"
+          class="shadow-sm"></b-form-input>
+      </b-form-group>
 
-    <!-- Tombol Tambah Kategori -->
-    <b-button variant="success" @click="openAddModal" class="mb-3">Tambah Kategori <b-icon-plus></b-icon-plus></b-button>
+      <!-- Tombol Tambah Kategori -->
+      <b-button variant="success" @click="openAddModal" class="mb-3">Tambah Kategori
+        <b-icon-plus></b-icon-plus></b-button>
 
-    <!-- Card for Table -->
+      <!-- Card for Table -->
       <b-table striped hover bordered responsive :items="paginatedCategories" :fields="fields"
         class="bg-light table-hover card-shadow">
+        <template #cell(index)="data">
+          {{ (currentPage - 1) * perPage + data.index + 1 }}
+        </template>
         <template #cell(actions)="data">
           <b-button variant="primary" size="sm" @click="openEditModal(data.item)"
             class="btn bg-kuning"><b-icon-pencil></b-icon-pencil>
@@ -25,23 +29,24 @@
         </template>
       </b-table>
 
-    <!-- Pagination -->
-    <b-pagination v-model="currentPage" :total-rows="filteredCategories.length" :per-page="perPage"
-      aria-controls="category-table" align="center" class="mt-3" size="lg"></b-pagination>
+      <!-- Pagination -->
+      <b-pagination v-model="currentPage" :total-rows="filteredCategories.length" :per-page="perPage"
+        aria-controls="category-table" align="center" class="mt-3" size="lg"></b-pagination>
 
-    <!-- Modal Component -->
-    <KategoriModal :showModal="showModal" :categoryData="currentCategory" @submit="handleSubmit" />
+      <!-- Modal Component -->
+      <KategoriModal :showModal="showModal" :categoryData="currentCategory" @submit="handleSubmit"
+        @update:showModal="showModal = false" @hidden="showModal = false" />
 
-    <!-- Modal Konfirmasi Hapus -->
-    <NotificationModal :isVisible="isDeleteModalVisible" :messageTitle="'Konfirmasi Penghapusan'"
-      :messageBody="'Apakah Anda yakin ingin menghapus kategori ini?'" @close="closeDeleteModal">
-      <template #footer>
-        <button @click="deleteCategory" class="btn btn-danger">Ya, Hapus</button>
-        <button @click="closeDeleteModal" class="btn btn-secondary">Batal</button>
-      </template>
-    </NotificationModal>
+      <!-- Modal Konfirmasi Hapus -->
+      <NotificationModal :isVisible="isDeleteModalVisible" :messageTitle="'Konfirmasi Penghapusan'"
+        :messageBody="'Apakah Anda yakin ingin menghapus kategori ini?'" @close="closeDeleteModal">
+        <template #footer>
+          <button @click="deleteCategory" class="btn btn-danger">Ya, Hapus</button>
+          <button @click="closeDeleteModal" class="btn btn-secondary">Batal</button>
+        </template>
+      </NotificationModal>
+    </div>
   </div>
-</div>
 </template>
 
 <script>
@@ -70,6 +75,7 @@ export default {
       isDeleteModalVisible: false,
       categoryToDelete: null,
       fields: [
+        { key: "index", label: "No" },
         { key: 'kategori', label: 'Nama Kategori', sortable: true },
         { key: 'actions', label: 'Aksi' }
       ],
@@ -115,7 +121,8 @@ export default {
         this.showModal = false;
         await this.fetchCategories();
       } catch (error) {
-        this.$toast.error('Terjadi kesalahan. Silakan coba lagi!');
+        const errorMessage = error.message || "Terjadi kesalahan. Silakan coba lagi!";
+        this.$toast.error(errorMessage);
       }
     },
     async deleteCategory() {

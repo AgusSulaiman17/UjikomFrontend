@@ -1,92 +1,59 @@
 <template>
   <div class="">
     <Header />
-  <div class="container mt-4">
+    <div class="container mt-4">
 
-    <!-- Input Pencarian -->
-    <b-form-group class="mb-3 card-shadow">
-      <b-form-input
-        v-model="searchQuery"
-        placeholder="Cari berdasarkan nama atau email..."
-        debounce="300"
-        size="lg"
-        class="shadow-sm"
-      ></b-form-input>
-    </b-form-group>
+      <!-- Input Pencarian -->
+      <b-form-group class="mb-3 card-shadow">
+        <b-form-input v-model="searchQuery" placeholder="Cari berdasarkan nama atau email..." debounce="300" size="lg"
+          class="shadow-sm"></b-form-input>
+      </b-form-group>
 
-    <!-- Tombol Tambah Pengguna -->
-    <b-button variant="success" @click="openAddModal" class="mb-3">Tambah Pengguna <b-icon-plus></b-icon-plus></b-button>
+      <!-- Tombol Tambah Pengguna -->
+      <b-button variant="success" @click="openAddModal" class="mb-3">Tambah Pengguna
+        <b-icon-plus></b-icon-plus></b-button>
 
-    <!-- Card for Table -->
-      <b-table
-        striped
-        hover
-        bordered
-        responsive
-        :items="paginatedUsers"
-        :fields="fields"
-        class="bg-light table-hover card-shadow"
-      >
+      <!-- Card for Table -->
+      <b-table striped hover bordered responsive :items="paginatedUsers" :fields="fields"
+        class="bg-light table-hover card-shadow">
+        <template #cell(index)="data">
+          {{ (currentPage - 1) * perPage + data.index + 1 }}
+        </template>
         <template #cell(image)="data">
-          <img
-            v-if="data.item.image"
+          <img v-if="data.item.image"
             :src="data.item.image.startsWith('http') ? data.item.image : `http://localhost:8080/${data.item.image}`"
-            :alt="data.item.name"
-            class="rounded-circle border shadow-sm"
-            width="50"
-            height="50"
-          />
+            :alt="data.item.name" class="rounded-circle border shadow-sm" width="50" height="50" />
           <span v-else class="text-muted">Tidak ada foto</span>
         </template>
 
         <template #cell(actions)="data">
-          <b-button
-            variant="primary"
-            size="sm"
-            @click="openEditModal(data.item)"
+          <b-button variant="primary" size="sm" @click="openEditModal(data.item)"
             class="btn bg-kuning"><b-icon-pencil></b-icon-pencil>
           </b-button>
-          <b-button
-            variant="danger"
-            size="sm"
-            @click="confirmDeleteUser(data.item.id)"
+          <b-button variant="danger" size="sm" @click="confirmDeleteUser(data.item.id)"
             class="btn bg-merah"><b-icon-trash></b-icon-trash>
           </b-button>
         </template>
       </b-table>
 
-    <!-- Pagination -->
-    <b-pagination
-      v-model="currentPage"
-      :total-rows="filteredUsers.length"
-      :per-page="perPage"
-      aria-controls="user-table"
-      align="center"
-      class="mt-3"
-      size="lg"
-    ></b-pagination>
+      <!-- Pagination -->
+      <b-pagination v-model="currentPage" :total-rows="filteredUsers.length" :per-page="perPage"
+        aria-controls="user-table" align="center" class="mt-3" size="lg"></b-pagination>
 
-    <!-- Modal Component -->
-    <UserModal
-      :showModal="showModal"
-      :userData="currentUser"
-      @submit="handleSubmit"
-    />
+      <!-- Modal Component -->
+      <UserModal :showModal="showModal" :userData="currentUser" @update:showModal="showModal = $event"
+        @submit="handleSubmit" />
 
-    <!-- Modal Konfirmasi Hapus -->
-    <NotificationModal
-      :isVisible="isDeleteModalVisible"
-      :messageTitle="'Konfirmasi Penghapusan'"
-      :messageBody="'Apakah Anda yakin ingin menghapus pengguna ini?'"
-      @close="closeDeleteModal"
-    >
-      <template #footer>
-        <button @click="deleteUser" class="btn btn-danger">Ya, Hapus</button>
-        <button @click="closeDeleteModal" class="btn btn-secondary">Batal</button>
-      </template>
-    </NotificationModal>
+      <!-- Modal Konfirmasi Hapus -->
+      <NotificationModal :isVisible="isDeleteModalVisible" :messageTitle="'Konfirmasi Penghapusan'"
+        :messageBody="'Apakah Anda yakin ingin menghapus pengguna ini?'" @close="closeDeleteModal">
+        <template #footer>
+          <button @click="deleteUser" class="btn btn-danger">Ya, Hapus</button>
+          <button @click="closeDeleteModal" class="btn btn-secondary">Batal</button>
+        </template>
+      </NotificationModal>
+    </div>
   </div>
-</div>
 </template>
 
 <script>
@@ -119,6 +86,7 @@ export default {
       isDeleteModalVisible: false,  // State untuk visibilitas modal konfirmasi hapus
       userToDelete: null,  // Menyimpan ID pengguna yang akan dihapus
       fields: [
+        { key: "index", label: "No" },
         { key: 'image', label: 'Foto', sortable: false },
         { key: 'name', label: 'Nama', sortable: true },
         { key: 'email', label: 'Email', sortable: true },
@@ -153,7 +121,7 @@ export default {
     }
   },
   methods: {
-    name:'users',
+    name: 'users',
     openAddModal() {
       this.currentUser = {
         id: null,
@@ -171,19 +139,30 @@ export default {
     },
     async handleSubmit(userData) {
       try {
-        if (userData.id) {
-          await updateUser(userData.id, userData);
-          this.$toast.success('Pengguna berhasil diperbarui!');
-        } else {
-          await createUser(userData);
-          this.$toast.success('Pengguna berhasil ditambahkan!');
-        }
-        this.showModal = false;
-        await this.fetchUsers();
-      } catch (error) {
-        this.$toast.error('Terjadi kesalahan. Silakan coba lagi!');
-      }
-    },
+  if (userData.id) {
+    const response = await updateUser(userData.id, userData);
+    this.users = this.users.map(user => user.id === userData.id ? { ...user, ...userData } : user);
+    this.$toast.success(response.data.message || 'Pengguna berhasil diperbarui!');
+  } else {
+    const response = await createUser(userData);
+    await this.fetchUsers(); // Pastikan daftar pengguna diperbarui
+    this.$toast.success(response.data.message || 'Pengguna berhasil ditambahkan!');
+  }
+  this.showModal = false;
+} catch (error) {
+  console.error("Error:", error.message);
+
+  let errorMessage = 'Terjadi kesalahan. Silakan coba lagi!';
+
+  if (error.message) {
+    errorMessage = error.message;
+  }
+
+  this.$toast.error(errorMessage);
+}
+
+    }
+    ,
     async deleteUser() {
       if (!this.userToDelete) return;
       try {
@@ -197,9 +176,9 @@ export default {
       }
     },
     confirmDeleteUser(userId) {
-  this.userToDelete = userId;
-  this.isDeleteModalVisible = true;  // Pastikan hanya modal konfirmasi yang terbuka
-},
+      this.userToDelete = userId;
+      this.isDeleteModalVisible = true;  // Pastikan hanya modal konfirmasi yang terbuka
+    },
     closeDeleteModal() {
       this.isDeleteModalVisible = false;  // Sembunyikan modal konfirmasi
       this.userToDelete = null;  // Reset ID pengguna yang akan dihapus

@@ -54,18 +54,18 @@ export default {
       ];
     },
   },
-  async created() {
-    try {
-      this.totalBuku = (await getAllBuku()).data?.length || 0;
-      this.totalPenerbit = (await getAllPenerbit()).data?.length || 0;
-      this.totalPenulis = (await getAllPenulis()).data?.length || 0;
-      this.totalUsers = (await getAllUsers()).data?.length || 0;
-      this.totalKategori = (await getAllKategori()).data?.length || 0;
-      this.totalPeminjaman = (await getAllPeminjaman()).data?.length || 0;
-    } catch (error) {
-      console.error("Gagal mengambil data:", error);
-    }
-  },
+  async mounted() {
+  try {
+    this.totalBuku = (await getAllBuku()).data?.length || 0;
+    this.totalPenerbit = (await getAllPenerbit()).data?.length || 0;
+    this.totalPenulis = (await getAllPenulis()).data?.length || 0;
+    this.totalUsers = (await getAllUsers()).data?.length || 0;
+    this.totalKategori = (await getAllKategori()).data?.length || 0;
+    this.totalPeminjaman = (await getAllPeminjaman()).data?.length || 0;
+  } catch (error) {
+    console.error("Gagal mengambil data:", error);
+  }
+}
 };
 </script>
 

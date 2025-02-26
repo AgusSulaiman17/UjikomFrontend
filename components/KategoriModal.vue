@@ -4,6 +4,7 @@
     :title="isEditMode ? 'Edit Kategori' : 'Tambah Kategori'"
     size="lg"
     @ok="submitForm"
+     @hide="closeModal"
   >
     <b-form @submit.prevent="submitForm">
       <b-form-group label="Nama Kategori" label-for="name">
@@ -52,6 +53,10 @@ export default {
     submitForm() {
       this.$emit('submit', this.form);  // Kirim data form ke parent
     },
+    closeModal() {
+    this.$emit("update:showModal", false); // Pastikan modal benar-benar ditutup
+    this.form = { id: null, kategori: '' }; // Reset form agar data lama tidak tersisa
+  },
   },
 };
 </script>
