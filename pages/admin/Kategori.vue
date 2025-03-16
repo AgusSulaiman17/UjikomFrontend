@@ -2,7 +2,6 @@
   <div class="kategori">
     <Header />
     <div class="container mt-4">
-
       <!-- Input Pencarian -->
       <b-form-group class="mb-3 card-shadow">
         <b-form-input v-model="searchQuery" placeholder="Cari berdasarkan nama kategori..." debounce="300" size="lg"
@@ -10,24 +9,30 @@
       </b-form-group>
 
       <!-- Tombol Tambah Kategori -->
-      <b-button variant="success" @click="openAddModal" class="mb-3">Tambah Kategori
-        <b-icon-plus></b-icon-plus></b-button>
+      <b-button variant="success" @click="openAddModal" class="mb-3">
+        Tambah Kategori <b-icon-plus></b-icon-plus>
+      </b-button>
 
-      <!-- Card for Table -->
+      <!-- Table -->
       <b-table striped hover bordered responsive :items="paginatedCategories" :fields="fields"
         class="bg-light table-hover card-shadow">
         <template #cell(index)="data">
           {{ (currentPage - 1) * perPage + data.index + 1 }}
         </template>
         <template #cell(actions)="data">
-          <b-button variant="primary" size="sm" @click="openEditModal(data.item)"
-            class="btn bg-kuning"><b-icon-pencil></b-icon-pencil>
+          <b-button variant="primary" size="sm" @click="openEditModal(data.item)" class="btn bg-kuning">
+            <b-icon-pencil></b-icon-pencil>
           </b-button>
-          <b-button variant="danger" size="sm" @click="confirmDeleteCategory(data.item.id)"
-            class="btn bg-merah"><b-icon-trash></b-icon-trash>
+          <b-button variant="danger" size="sm" @click="confirmDeleteCategory(data.item.id)" class="btn bg-merah">
+            <b-icon-trash></b-icon-trash>
           </b-button>
         </template>
       </b-table>
+
+      <div v-if="paginatedCategories.length === 0" class="text-center p-3">
+        <b-icon-exclamation-circle class="text-muted" font-scale="2"></b-icon-exclamation-circle>
+        <p class="mt-2 text-muted">Data Kosong</p>
+      </div>
 
       <!-- Pagination -->
       <b-pagination v-model="currentPage" :total-rows="filteredCategories.length" :per-page="perPage"
@@ -99,31 +104,42 @@ export default {
     await this.fetchCategories();
   },
   methods: {
+    async fetchCategories() {
+      try {
+        const response = await getAllKategori();
+        this.categories = response?.data || [];
+      } catch (error) {
+        console.error('Error fetching categories:', error);
+      }
+    },
     openAddModal() {
-      this.currentCategory = { id: null, kategori: '' }; // Membuka modal dengan kategori kosong
+      this.currentCategory = { id: null, kategori: '' };
       this.showModal = true;
     },
     openEditModal(category) {
-      this.currentCategory = { ...category }; // Mengirim data kategori untuk diedit
+      console.log("Editing category:", category);
+      this.currentCategory = { ...category };
       this.showModal = true;
     },
     async handleSubmit(categoryData) {
       try {
         if (categoryData.id) {
-          // Jika ada ID, lakukan PUT (update)
           await updateKategori(categoryData.id, categoryData);
           this.$toast.success('Kategori berhasil diperbarui!');
         } else {
-          // Jika tidak ada ID, lakukan POST (create)
           await createKategori(categoryData);
           this.$toast.success('Kategori berhasil ditambahkan!');
         }
         this.showModal = false;
         await this.fetchCategories();
       } catch (error) {
-        const errorMessage = error.message || "Terjadi kesalahan. Silakan coba lagi!";
-        this.$toast.error(errorMessage);
+        this.$toast.error("Terjadi kesalahan. Silakan coba lagi!");
       }
+    },
+    confirmDeleteCategory(categoryId) {
+      console.log("Deleting category ID:", categoryId);
+      this.categoryToDelete = categoryId;
+      this.isDeleteModalVisible = true;
     },
     async deleteCategory() {
       if (!this.categoryToDelete) return;
@@ -137,28 +153,15 @@ export default {
         this.closeDeleteModal();
       }
     },
-    confirmDeleteCategory(categoryId) {
-      this.categoryToDelete = categoryId;
-      this.isDeleteModalVisible = true;
-    },
     closeDeleteModal() {
       this.isDeleteModalVisible = false;
       this.categoryToDelete = null;
-    },
-    async fetchCategories() {
-      try {
-        const data = await getAllKategori();
-        this.categories = data.data;
-      } catch (error) {
-        console.error('Error fetching categories:', error);
-      }
     }
   },
 };
 </script>
 
 <style scoped>
-/* Styling untuk input pencarian */
 .b-form-input {
   border-radius: 30px;
   background-color: #f1f1f1;

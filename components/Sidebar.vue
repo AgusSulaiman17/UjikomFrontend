@@ -26,6 +26,11 @@
           </nuxt-link>
         </li>
         <li>
+          <nuxt-link to="/admin/unappusers" v-if="user.role === 'admin' || user.role === 'petugas'" exact-active-class="active">
+            <BIconJournalAlbum /> Pendaftaran
+          </nuxt-link>
+        </li>
+        <li>
           <nuxt-link to="/admin/booking" v-if="user.role === 'admin' || user.role === 'petugas'" exact-active-class="active">
             <BIconJournalAlbum /> Pemesanan
           </nuxt-link>
@@ -64,17 +69,45 @@
           </ul>
         </li>
         <li>
-          <a href="#" @click.prevent="logout" class="mb-4">
+          <a href="#" @click.prevent="isLogoutModalVisible = true" class="mb-4">
             <BIconBoxArrowRight /> Logout
           </a>
         </li>
       </ul>
     </nav>
+
+    <!-- Notification Modal untuk Logout -->
+    <NotificationModal
+      :isVisible="isLogoutModalVisible"
+      :messageTitle="'Konfirmasi Logout'"
+      :messageBody="'Apakah Anda yakin ingin keluar?'"
+      @close="isLogoutModalVisible = false"
+    >
+      <template #footer>
+        <button @click="confirmLogout" class="btn btn-danger">
+          Ya, Keluar
+        </button>
+        <button @click="isLogoutModalVisible = false" class="btn btn-secondary">
+          Batal
+        </button>
+      </template>
+    </NotificationModal>
+
   </div>
 </template>
 
 <script>
-import { BIconHouse, BIconBook, BIconPerson, BIconBoxArrowRight, BIconJournalAlbum, BIconPencilSquare, BIconTags, BIconBuilding } from "bootstrap-vue";
+import {
+  BIconHouse,
+  BIconBook,
+  BIconPerson,
+  BIconBoxArrowRight,
+  BIconJournalAlbum,
+  BIconPencilSquare,
+  BIconTags,
+  BIconBuilding
+} from "bootstrap-vue";
+import NotificationModal from "@/components/NotificationModal.vue"; // Pastikan file modal sudah ada
 
 export default {
   components: {
@@ -82,6 +115,7 @@ export default {
     BIconBook,
     BIconPerson,
     BIconBoxArrowRight,
+    NotificationModal
   },
   data() {
     return {
@@ -93,45 +127,45 @@ export default {
       dropdowns: {
         buku: false,
       },
+      isLogoutModalVisible: false, // Untuk mengontrol tampilan modal logout
     };
   },
   mounted() {
-  try {
-    const storedUser = JSON.parse(localStorage.getItem("user"));
-    if (storedUser) {
-      this.user = storedUser;
+    try {
+      const storedUser = JSON.parse(localStorage.getItem("user"));
+      if (storedUser) {
+        this.user = storedUser;
+      }
+    } catch (error) {
+      console.error("Error parsing user data:", error);
     }
-  } catch (error) {
-    console.error("Error parsing user data:", error);
-  }
 
-  // Dengarkan event perubahan user dari root instance
-  this.$root.$on("userUpdated", (newUser) => {
-    this.user = newUser;
-  });
-}
-,
+    // Dengarkan event perubahan user dari root instance
+    this.$root.$on("userUpdated", (newUser) => {
+      this.user = newUser;
+    });
+  },
   methods: {
     toggleDropdown(menu) {
       this.dropdowns[menu] = !this.dropdowns[menu];
     },
-    logout() {
+    confirmLogout() {
       localStorage.removeItem("user");
       localStorage.removeItem("token");
       this.$router.push("/login");
     },
   },
   watch: {
-  user: {
-    handler(newUser) {
-      localStorage.setItem("user", JSON.stringify(newUser));
+    user: {
+      handler(newUser) {
+        localStorage.setItem("user", JSON.stringify(newUser));
+      },
+      deep: true,
     },
-    deep: true,
   },
-}
-
 };
 </script>
+
 
 <style scoped>
 .sidebar {

@@ -19,6 +19,20 @@ export const mutations = {
 };
 
 export const actions = {
+  nuxtClientInit({ commit }) {
+    if (process.client) {
+      const user = localStorage.getItem("user");
+      const token = localStorage.getItem("token");
+
+      console.log("User dari localStorage saat nuxtClientInit:", user); // Debugging
+
+      if (user && token) {
+        commit("setUser", JSON.parse(user));
+        commit("setToken", token);
+      }
+    }
+  },
+
   login({ commit }, { user, token }) {
     commit('setUser', user);
     commit('setToken', token);

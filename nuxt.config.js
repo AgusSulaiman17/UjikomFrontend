@@ -23,8 +23,10 @@ export default {
 
   plugins: [
     '~/plugins/bootstrap-vue.js',
+    '~/plugins/init-client.js',
     { src: '~/plugins/vue-toastification.js', ssr: false }
   ],
+  store: true,
 
   components: true,
 

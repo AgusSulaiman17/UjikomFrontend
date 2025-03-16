@@ -10,7 +10,7 @@
     <div v-if="peminjamanDikembalikan.length">
       <div v-for="(item) in peminjamanDikembalikan" :key="item.id_peminjaman" class="peminjaman-item">
         <div class="card shadow-sm">
-          <div class="row no-gutters">
+          <div class="row no-gutters card-shadow">
             <div class="col-md-3 d-flex justify-content-center align-items-center">
               <img
                 :src="(item.buku?.gambar) ? ((item.buku?.gambar).startsWith('http') ? (item.buku?.gambar) : `http://localhost:8080/${(item.buku?.gambar)}`) : 'default.jpg'"

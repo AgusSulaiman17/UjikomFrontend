@@ -13,7 +13,7 @@
       </b-form-group>
 
 
-      <b-form-group label="Role" label-for="role" v-if="user?.role === 'admin'">
+      <b-form-group label="Role" label-for="role">
         <b-form-select id="role" v-model="form.role" :options="roleOptions" required></b-form-select>
       </b-form-group>
 

@@ -27,14 +27,19 @@
         </template>
 
         <template #cell(actions)="data">
-          <b-button variant="primary" size="sm" @click="openEditModal(data.item)"
+          <!-- <b-button variant="primary" size="sm" @click="openEditModal(data.item)"
             class="btn bg-kuning"><b-icon-pencil></b-icon-pencil>
-          </b-button>
+          </b-button> -->
           <b-button variant="danger" size="sm" @click="confirmDeleteUser(data.item.id)"
             class="btn bg-merah"><b-icon-trash></b-icon-trash>
           </b-button>
         </template>
       </b-table>
+
+      <div v-if="paginatedUsers.length === 0" class="text-center p-3">
+        <b-icon-exclamation-circle class="text-muted" font-scale="2"></b-icon-exclamation-circle>
+        <p class="mt-2 text-muted">Data Kosong</p>
+      </div>
 
       <!-- Pagination -->
       <b-pagination v-model="currentPage" :total-rows="filteredUsers.length" :per-page="perPage"
@@ -121,7 +126,6 @@ export default {
     }
   },
   methods: {
-    name: 'users',
     openAddModal() {
       this.currentUser = {
         id: null,

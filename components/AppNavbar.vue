@@ -10,7 +10,8 @@
         <b-collapse v-if="!user" id="nav-collapse" is-nav>
           <b-navbar-nav class="ml-auto">
             <b-nav-item>
-              <b-button class="btn-custom">Login
+              <b-button class="btn-custom" @click="$router.push('/login')">
+                Login
                 <b-icon-door-open-fill></b-icon-door-open-fill>
               </b-button>
             </b-nav-item>
@@ -20,8 +21,18 @@
         <b-collapse v-if="user" id="nav-collapse" is-nav>
           <b-navbar-nav class="ml-auto">
             <b-nav-item v-if="user.role === 'admin'"></b-nav-item>
-            <b-nav-item>
+            <b-nav-item v-if="user.role === 'user'">
               <nuxt-link to="/user/Dashboard" class="nav-link-animated" exact-active-class="active-link">
+                <BIconHouse /> Dashboard
+              </nuxt-link>
+            </b-nav-item>
+            <b-nav-item v-if="user.role === 'admin'">
+              <nuxt-link to="/admin/Dashboard" class="nav-link-animated" exact-active-class="active-link">
+                <BIconHouse /> Dashboard
+              </nuxt-link>
+            </b-nav-item>
+            <b-nav-item v-if="user.role === 'petugas'">
+              <nuxt-link to="/petugas/Dashboard" class="nav-link-animated" exact-active-class="active-link">
                 <BIconHouse /> Dashboard
               </nuxt-link>
             </b-nav-item>
@@ -30,12 +41,12 @@
                 <BIconBookmarks /> Daftar Buku
               </nuxt-link>
             </b-nav-item>
-            <b-nav-item v-if="user.role === 'user' || user.role === 'petugas'" @mouseover="showBookingMenu = true"
+            <b-nav-item v-if="user.role === 'user'" @mouseover="showBookingMenu = true"
               @mouseleave="showBookingMenu = false" class="position-relative">
 
-              <nuxt-link to="/user/Pinjaman" class="nav-link-animated" exact-active-class="active-link">
+              <span class="nav-link-animated" exact-active-class="active-link">
                 <BIconCardChecklist /> Pinjaman
-              </nuxt-link>
+              </span>
 
               <!-- Transisi untuk submenu -->
               <transition name="fade">
@@ -46,10 +57,14 @@
                   <nuxt-link to="/user/history" class="submenu-link">
                     <BIconClockHistory /> History
                   </nuxt-link>
+                  <nuxt-link to="/user/pinjaman" class="submenu-link">
+                    <BIconClockHistory /> Pinjaman
+                  </nuxt-link>
                 </div>
               </transition>
             </b-nav-item>
-            <b-nav-item v-if="user.role === 'user' || user.role === 'petugas'">
+
+            <b-nav-item v-if="user.role === 'user'">
               <nuxt-link to="/user/favorite" class="nav-link-animated" exact-active-class="active-link">
                 <BIconStarHalf /> Favorite
               </nuxt-link>
@@ -125,13 +140,9 @@ export default {
       this.$router.push("/login");
     },
     confirmLogout() {
-      this.isLoading = true;
-      setTimeout(() => {
-        this.$store.commit('logout');
-        this.$router.push('/');
-        this.showLogoutConfirmationModal = false;
-        this.isLoading = false;
-      }, 2000);
+      localStorage.removeItem("user");
+      localStorage.removeItem("token");
+      this.$router.push("/login");
     },
     cancelLogout() {
       this.showLogoutConfirmationModal = false;

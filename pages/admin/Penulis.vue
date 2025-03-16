@@ -26,6 +26,10 @@
           </b-button>
         </template>
       </b-table>
+      <div v-if="paginatedPenulis.length === 0" class="text-center p-3">
+        <b-icon-exclamation-circle class="text-muted" font-scale="2"></b-icon-exclamation-circle>
+        <p class="mt-2 text-muted">Data Kosong</p>
+      </div>
 
     <b-pagination v-model="currentPage" :total-rows="filteredPenulis.length" :per-page="perPage"
       aria-controls="penulis-table" align="center" class="mt-3" size="lg"></b-pagination>

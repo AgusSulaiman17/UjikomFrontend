@@ -32,6 +32,15 @@ axiosInstance.interceptors.request.use(
 // Fungsi untuk membuat pengguna baru
 export const createUser = async (userData) => {
   try {
+    const response = await axiosInstance.post('/app/', userData);
+    return response.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.error || 'Error creating user');
+  }
+};
+
+export const createUserUnapp = async (userData) => {
+  try {
     const response = await axiosInstance.post('/', userData);
     return response.data;
   } catch (error) {
@@ -49,6 +58,7 @@ export const getAllUsers = async () => {
   }
 };
 
+
 // Fungsi untuk mengambil pengguna berdasarkan ID
 export const getUserById = async (id) => {
   try {
@@ -64,11 +74,29 @@ export const getUserById = async (id) => {
   }
 };
 
+// Fungsi untuk mengambil semua pengguna
+export const getUsersUnapp = async () => {
+  try {
+    const response = await axiosInstance.get('/unapp/');
+    return response.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.error || 'Error fetching users');
+  }
+};
 
 // Fungsi untuk memperbarui pengguna
 export const updateUser = async (id, userData) => {
   try {
     const response = await axiosInstance.put(`/${id}`, userData);
+    return response.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.error || 'Error updating user');
+  }
+};
+
+export const ApproveUser = async (id, userData) => {
+  try {
+    const response = await axiosInstance.put(`/approve/${id}`, userData);
     return response.data;
   } catch (error) {
     throw new Error(error.response?.data?.error || 'Error updating user');

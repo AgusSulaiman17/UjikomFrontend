@@ -22,6 +22,8 @@ export default {
         "/admin/users": "Pengguna",
         "/admin/penerbit": "Penerbit",
         "/admin/penulis": "Penulis",
+        "/admin/booking": "Pesanan",
+        "/admin/unappusers": "Pendaftaran",
       };
       return titles[this.$route.path] || "Peminjaman Buku";
     },

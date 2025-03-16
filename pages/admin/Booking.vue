@@ -1,116 +1,192 @@
 <template>
   <div>
-    <h1>Daftar Booking (Pending)</h1>
+    <Header />
+    <div class="container mt-4">
+      <!-- Input Pencarian -->
+      <b-form-group class="mb-3 card-shadow">
+        <b-form-input v-model="searchQuery" placeholder="Cari berdasarkan nama user..." debounce="300" size="lg"
+          class="shadow-sm"></b-form-input>
+      </b-form-group>
 
-    <!-- Tampilkan pesan jika tidak ada booking yang pending -->
-    <div v-if="bookings.length === 0">
-      <p>Tidak ada booking yang pending.</p>
+      <!-- Tabel Booking -->
+      <b-table striped hover bordered responsive :items="paginatedBookings" :fields="fields"
+        class="bg-light table-hover card-shadow">
+        <template #cell(index)="data">
+          {{ (currentPage - 1) * perPage + data.index + 1 }}
+        </template>
+        <template #cell(user)="data">
+          {{ data.item.user ? data.item.user.name : "Tidak Ditemukan" }}
+        </template>
+        <template #cell(buku)="data">
+          {{ data.item.buku ? data.item.buku.judul : "Tidak Ditemukan" }}
+        </template>
+        <template #cell(actions)="data">
+          <b-button v-if="data.item.status === 'pending'" variant="success" size="sm"
+            @click="showApproveModal(data.item.id_peminjaman)" class="btn bg-hijau">
+            <b-icon-check></b-icon-check> Setujui
+          </b-button>
+        </template>
+      </b-table>
+      <div v-if="paginatedBookings.length === 0" class="text-center p-3">
+        <b-icon-exclamation-circle class="text-muted" font-scale="2"></b-icon-exclamation-circle>
+        <p class="mt-2 text-muted">Data Kosong</p>
+      </div>
+
+      <!-- Pagination -->
+      <b-pagination v-model="currentPage" :total-rows="filteredBookings.length" :per-page="perPage" align="center"
+        class="mt-3" size="lg"></b-pagination>
+
+      <!-- Modal Konfirmasi Persetujuan -->
+      <NotificationModal :isVisible="isApproveModalVisible" :messageTitle="'Konfirmasi Persetujuan'"
+        :messageBody="'Apakah Anda yakin ingin menyetujui pemesanan ini?'" @close="closeApproveModal">
+        <template #footer>
+  <button @click="confirmApproveBooking"
+          class="btn btn-success"
+          :disabled="isLoadingApprove">
+    <b-icon v-if="isLoadingApprove" icon="arrow-clockwise" animation="spin"></b-icon>
+    <span v-else>Ya, Setujui</span>
+  </button>
+  <button @click="closeApproveModal" class="btn btn-secondary" :disabled="isLoadingApprove">
+    Batal
+  </button>
+</template>
+
+
+      </NotificationModal>
     </div>
-
-    <!-- Tampilkan tabel booking -->
-    <table v-else>
-      <thead>
-        <tr>
-          <th>ID Booking</th>
-          <th>Nama User</th>
-          <th>Buku</th>
-          <th>Status</th>
-          <th>Action</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="booking in bookings" :key="booking.id_peminjaman">
-          <td>{{ booking.id_peminjaman }}</td>
-          <!-- Periksa apakah booking.user ada sebelum mengakses booking.user.name -->
-          <td>{{ booking.user ? booking.user.name : 'Tidak Ditemukan' }}</td>
-          <td>{{ booking.buku ? booking.buku.judul : 'Tidak Ditemukan' }}</td>
-          <td>{{ booking.status }}</td>
-          <td>
-            <button
-              v-if="booking.status === 'pending'"
-              @click="approveBooking(booking.id_peminjaman)"
-            >
-              Setujui
-            </button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
   </div>
 </template>
 
 <script>
-import { getAllBookings, approveBooking } from '~/api/peminjaman'; // pastikan path api benar
+import { getAllBookings, approveBooking } from "~/api/peminjaman";
+import Header from "~/components/Header.vue";
+import NotificationModal from "~/components/NotificationModal.vue";
 
 export default {
+  components: { Header, NotificationModal },
   data() {
     return {
-      bookings: [], // Menyimpan data booking
+      bookings: [],
+      searchQuery: "",
+      perPage: 5,
+      currentPage: 1,
+       isLoadingApprove: false,
+      showModal: false,
+      isApproveModalVisible: false,
+      selectedBookingId: null,
+      fields: [
+        { key: "index", label: "No" },
+        { key: "user", label: "Nama User", sortable: true },
+        { key: "buku", label: "Buku", sortable: true },
+        { key: "status", label: "Status" },
+        { key: "actions", label: "Aksi" },
+      ],
     };
   },
+  computed: {
+    filteredBookings() {
+      if (!this.searchQuery) return this.bookings;
+      const query = this.searchQuery.toLowerCase();
+      return this.bookings.filter((booking) =>
+        booking.user?.name.toLowerCase().includes(query)
+      );
+    },
+    paginatedBookings() {
+      const start = (this.currentPage - 1) * this.perPage;
+      const end = start + this.perPage;
+      return this.filteredBookings.slice(start, end);
+    },
+  },
+  async mounted() {
+    await this.fetchBookings();
+  },
   methods: {
-    // Mengambil semua booking yang pending
     async fetchBookings() {
       try {
-        const response = await getAllBookings(); // Ambil data booking dari API
-        // Simpan data yang diterima ke dalam state bookings
+        const response = await getAllBookings();
         this.bookings = response.data;
       } catch (error) {
-        console.error('Error fetching bookings:', error);
-        this.$toast.error('Gagal mengambil data booking');
+        console.error("Error fetching bookings:", error);
+        this.$toast.error("Gagal mengambil data booking");
       }
     },
+    showApproveModal(id) {
+      this.selectedBookingId = id;
+      this.isApproveModalVisible = true;
+    },
+    closeApproveModal() {
+      this.isApproveModalVisible = false;
+      this.selectedBookingId = null;
+    },
+    async confirmApproveBooking() {
+  if (!this.selectedBookingId) return;
 
-    // Menyetujui booking
-    async approveBooking(id) {
-      try {
-        await approveBooking(id); // Panggil API untuk menyetujui booking
-        // Setelah booking disetujui, ambil ulang data booking
-        this.fetchBookings();
-        this.$toast.success('Booking berhasil disetujui');
-      } catch (error) {
-        console.error('Error approving booking:', error);
-        this.$toast.error('Gagal menyetujui booking');
-      }
-    }
-  },
-  created() {
-    // Ambil data booking ketika halaman pertama kali dimuat
-    this.fetchBookings();
+  this.isLoadingApprove = true; // Aktifkan loading
+  try {
+    await approveBooking(this.selectedBookingId);
+
+    // Hapus item yang sudah disetujui dari daftar bookings
+    this.bookings = this.bookings.filter(
+      (booking) => booking.id_peminjaman !== this.selectedBookingId
+    );
+
+    this.$toast.success("Booking berhasil disetujui!");
+  } catch (error) {
+    this.$toast.error("Gagal menyetujui booking!");
+  } finally {
+    this.isLoadingApprove = false; // Matikan loading setelah selesai
+    this.closeApproveModal();
+  }
+}
+
+
   },
 };
 </script>
 
 <style scoped>
-/* Style untuk tabel dan button */
-table {
-  width: 100%;
-  border-collapse: collapse;
+.b-form-input {
+  border-radius: 30px;
+  background-color: #f1f1f1;
 }
 
-table, th, td {
-  border: 1px solid #ddd;
+.b-button {
+  transition: all 0.3s ease;
 }
 
-th, td {
-  padding: 10px;
-  text-align: left;
+.b-button:hover {
+  background-color: #d9534f;
+  border-color: #c9302c;
 }
 
-button {
+.table-hover tbody tr:hover {
+  background-color: #f8f9fa;
+}
+
+.b-pagination .page-item.active .page-link {
+  background-color: #007bff;
+  border-color: #007bff;
+}
+
+.b-pagination .page-item .page-link {
+  border-radius: 20px;
+  padding: 8px 15px;
+}
+
+.card {
+  margin-top: 20px;
+}
+
+.bg-hijau {
   background-color: #28a745;
   color: white;
-  border: none;
-  padding: 5px 10px;
-  cursor: pointer;
-  border-radius: 5px;
 }
 
-button:hover {
+.bg-hijau:hover {
   background-color: #218838;
 }
 
-button:disabled {
-  background-color: #ccc;
+.bg-light {
+  background-color: #f8f9fa;
 }
 </style>

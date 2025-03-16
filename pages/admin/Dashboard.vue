@@ -1,22 +1,22 @@
 <template>
-  <div class="">
-  <Header />
-  <div class="mt-5">
-    <div class="cards-container">
-      <div v-for="(item, index) in items" :key="index" class="card feature-card">
-        <div class="card-details">
-          <p class="text-title">
-            <b-icon :icon="item.icon" class="icon-sidemargin"></b-icon> {{ item.title }}
-          </p>
-          <p class="text-body">{{ item.count }} data tersedia</p>
+  <div>
+    <Header />
+    <div class="mt-5 ml-5">
+      <div class="cards-container">
+        <div v-for="item in items" :key="item.title" class="card feature-card">
+          <div class="card-details">
+            <p class="text-title">
+              <b-icon :icon="item.icon" class="icon-sidemargin"></b-icon> {{ item.title }}
+            </p>
+            <p class="text-body">{{ item.count }} data tersedia</p>
+          </div>
+          <button @click="$router.push(item.link)" class="card-button">
+            Lihat Detail <b-icon icon="search"></b-icon>
+          </button>
         </div>
-        <button @click="$router.push(item.link)" class="card-button">
-          Lihat Detail <b-icon-search></b-icon-search>
-        </button>
       </div>
     </div>
   </div>
-</div>
 </template>
 
 <script>
@@ -26,11 +26,13 @@ import { getAllPenulis } from "@/api/penulis";
 import { getAllUsers } from "@/api/users";
 import { getAllKategori } from "@/api/kategori";
 import { getAllPeminjaman } from "@/api/peminjaman";
+import { getAllBookings } from "~/api/peminjaman";
+import { getUsersUnapp } from "@/api/users";
 import Header from "~/components/Header.vue";
 
 export default {
   components: {
-    Header
+    Header,
   },
   data() {
     return {
@@ -40,6 +42,8 @@ export default {
       totalUsers: 0,
       totalKategori: 0,
       totalPeminjaman: 0,
+      totalBooking: 0,
+      totalUnApp: 0,
     };
   },
   computed: {
@@ -51,21 +55,32 @@ export default {
         { title: "Users", count: this.totalUsers, link: "/admin/users", icon: "person" },
         { title: "Kategori", count: this.totalKategori, link: "/admin/kategori", icon: "tag" },
         { title: "Peminjaman", count: this.totalPeminjaman, link: "/admin/peminjaman", icon: "file-text" },
+        { title: "Booking", count: this.totalBooking, link: "/admin/booking", icon: "file-text" },
+        { title: "Pendaftar", count: this.totalUnApp, link: "/admin/unappusers", icon: "file-text" },
       ];
     },
   },
   async mounted() {
-  try {
-    this.totalBuku = (await getAllBuku()).data?.length || 0;
-    this.totalPenerbit = (await getAllPenerbit()).data?.length || 0;
-    this.totalPenulis = (await getAllPenulis()).data?.length || 0;
-    this.totalUsers = (await getAllUsers()).data?.length || 0;
-    this.totalKategori = (await getAllKategori()).data?.length || 0;
-    this.totalPeminjaman = (await getAllPeminjaman()).data?.length || 0;
-  } catch (error) {
-    console.error("Gagal mengambil data:", error);
-  }
-}
+    try {
+      const [
+        buku, penerbit, penulis, users, kategori, peminjaman, booking, unApp,
+      ] = await Promise.all([
+        getAllBuku(), getAllPenerbit(), getAllPenulis(), getAllUsers(),
+        getAllKategori(), getAllPeminjaman(), getAllBookings(), getUsersUnapp(),
+      ]);
+
+      this.totalBuku = buku.data?.length || 0;
+      this.totalPenerbit = penerbit.data?.length || 0;
+      this.totalPenulis = penulis.data?.length || 0;
+      this.totalUsers = users.data?.length || 0;
+      this.totalKategori = kategori.data?.length || 0;
+      this.totalPeminjaman = peminjaman.data?.length || 0;
+      this.totalBooking = booking.data?.length || 0;
+      this.totalUnApp = unApp.data?.length || 0;
+    } catch (error) {
+      console.error("Gagal mengambil data:", error);
+    }
+  },
 };
 </script>
 
@@ -73,8 +88,8 @@ export default {
 .cards-container {
   display: flex;
   flex-wrap: wrap;
-  gap: 2rem;
-  justify-content: center;
+  gap: 3rem;
+  margin-left: 20px;
 }
 
 .card {
@@ -94,8 +109,8 @@ export default {
 .card-details {
   color: black;
   height: 100%;
-  gap: 0.5em;
   display: grid;
+  gap: 0.5em;
   place-content: center;
 }
 

@@ -19,6 +19,9 @@
             <span class="forgot"><a href="#">Forgot Password?</a></span>
             <button type="submit">Login</button>
           </div>
+          <nuxt-link to="/register" class="login-link">
+            Belum punya akun? <span>Register</span>
+          </nuxt-link>
           <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
         </form>
       </div>
@@ -172,6 +175,38 @@ button {
 
 button:hover {
   background-color: #4a9663;
+}
+
+button {
+  width: 100%;
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  background-color: #5cb785;
+  color: white;
+  font-size: 18px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+  font-weight: bold;
+  margin-top: 15px;
+}
+
+button:hover {
+  background-color: #4a9663;
+}
+
+.login-link {
+  display: block;
+  text-align: center;
+  margin-top: 15px;
+  color: #333;
+  font-size: 14px;
+  text-decoration: none;
+}
+
+.login-link span {
+  color: #5cb785;
+  font-weight: bold;
 }
 
 .forgot {

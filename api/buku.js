@@ -18,12 +18,11 @@ const axiosInstance = axios.create({
 // Tambahkan token ke header Authorization setiap kali ada permintaan
 axiosInstance.interceptors.request.use(
   (config) => {
-    const token = getAuthToken();
-    if (token) {
-      config.headers['Authorization'] = `Bearer ${token}`;
-      console.log('Token added to request header:', `Bearer ${token}`);
-    } else {
-      console.log('No token found in localStorage');
+    if (typeof window !== "undefined") { // Cek apakah berjalan di client
+      const token = getAuthToken();
+      if (token) {
+        config.headers["Authorization"] = `Bearer ${token}`;
+      }
     }
     return config;
   },
