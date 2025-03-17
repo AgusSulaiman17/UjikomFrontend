@@ -1,7 +1,7 @@
 <template>
   <div>
     <Header />
-    <div class="container mt-4">
+    <div class="container mt-6">
       <!-- Input Pencarian -->
       <b-form-group class="mb-3 card-shadow">
         <b-form-input v-model="searchQuery" placeholder="Cari berdasarkan nama atau email..." debounce="300" size="lg"
@@ -89,7 +89,7 @@ export default {
     return {
       users: [],
       searchQuery: "",
-      perPage: 5,
+      perPage: 10,
       currentPage: 1,
       showModal: false,
       currentUser: {},

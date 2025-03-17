@@ -1,7 +1,7 @@
 <template>
   <div class="kategori">
     <Header />
-    <div class="container mt-4">
+    <div class="container mt-6">
       <!-- Input Pencarian -->
       <b-form-group class="mb-3 card-shadow">
         <b-form-input v-model="searchQuery" placeholder="Cari berdasarkan nama kategori..." debounce="300" size="lg"
@@ -9,7 +9,7 @@
       </b-form-group>
 
       <!-- Tombol Tambah Kategori -->
-      <b-button variant="success" @click="openAddModal" class="mb-3">
+      <b-button variant="btn bg-ijomuda" @click="openAddModal" class="mb-3">
         Tambah Kategori <b-icon-plus></b-icon-plus>
       </b-button>
 
@@ -70,7 +70,7 @@ export default {
     return {
       categories: [],
       searchQuery: "",
-      perPage: 5,
+      perPage: 10,
       currentPage: 1,
       showModal: false,
       currentCategory: {
@@ -134,6 +134,7 @@ export default {
         await this.fetchCategories();
       } catch (error) {
         this.$toast.error("Terjadi kesalahan. Silakan coba lagi!");
+        this.$toast.error(errorMessage);
       }
     },
     confirmDeleteCategory(categoryId) {

@@ -40,6 +40,11 @@
             <BIconJournalAlbum /> Peminjaman
           </nuxt-link>
         </li>
+        <li>
+          <nuxt-link to="/admin/buku" v-if="user.role === 'petugas'" exact-active-class="active">
+            <BIconJournalAlbum /> Data Buku
+          </nuxt-link>
+        </li>
         <!-- Dropdown Buku -->
         <li class="dropdown-wrapper" v-if="user.role === 'admin'">
           <a href="#" @click.prevent="toggleDropdown('buku')" class="dropdown-btn">

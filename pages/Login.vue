@@ -16,7 +16,6 @@
             <label for="pass">Password</label>
           </div>
           <div class="input-block">
-            <span class="forgot"><a href="#">Forgot Password?</a></span>
             <button type="submit">Login</button>
           </div>
           <nuxt-link to="/register" class="login-link">

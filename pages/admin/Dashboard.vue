@@ -1,7 +1,7 @@
 <template>
   <div>
     <Header />
-    <div class="mt-5 ml-5">
+    <div class="mt-6 ml-5">
       <div class="cards-container">
         <div v-for="item in items" :key="item.title" class="card feature-card">
           <div class="card-details">

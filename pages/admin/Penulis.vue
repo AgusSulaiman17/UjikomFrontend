@@ -1,14 +1,14 @@
 <template>
   <div class="">
     <Header />
-  <div class="container mt-4">
+  <div class="container mt-6">
 
     <b-form-group class="mb-3 card-shadow">
       <b-form-input v-model="searchQuery" placeholder="Cari berdasarkan nama penulis..." debounce="300" size="lg"
         class="shadow-sm"></b-form-input>
     </b-form-group>
 
-    <b-button variant="success" @click="openAddModal" class="mb-3">
+    <b-button variant="btn bg-ijomuda" @click="openAddModal" class="mb-3">
       Tambah Penulis <b-icon-plus></b-icon-plus>
     </b-button>
 
@@ -76,7 +76,7 @@ export default {
     return {
       penulis: [],
       searchQuery: "",
-      perPage: 5,
+      perPage: 10,
       currentPage: 1,
       showModal: false,
       currentPenulis: {

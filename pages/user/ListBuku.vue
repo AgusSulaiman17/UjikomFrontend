@@ -34,6 +34,10 @@
           </option>
         </select>
       </div>
+      <div class="col-md-3">
+        <button @click="resetFilters" class="reset-button">Reset Filter</button>
+      </div>
+
     </div>
 
     <div class="row mt-4">
@@ -48,9 +52,8 @@
           </div>
           <div class="card-img">
             <img v-if="buku.gambar"
-                 :src="buku.gambar.startsWith('http') ? buku.gambar : `http://localhost:8080/${buku.gambar}`"
-                 :alt="buku.judul"
-                 class="img" />
+              :src="buku.gambar.startsWith('http') ? buku.gambar : `http://localhost:8080/${buku.gambar}`"
+              :alt="buku.judul" class="img" />
           </div>
           <span class="card-title">{{ buku.judul }}</span>
           <p class="card-subtitle">Penulis: {{ buku.penulis?.nama || 'Tidak diketahui' }}</p>
@@ -68,12 +71,14 @@ import { getAllPenulis } from "@/api/penulis";
 import { getAllPenerbit } from "@/api/penerbit";
 import { getAllKategori } from "@/api/kategori";
 import AppNavbar from "~/components/AppNavbar.vue";
+import Footer from "~/components/Footer.vue";
 
 export default {
   name: 'ListBuku',
-  layout:'blank',
-  components :{
-    AppNavbar
+  layout: 'blank',
+  components: {
+    AppNavbar,
+    Footer
   },
   data() {
     return {
@@ -90,23 +95,23 @@ export default {
   },
   computed: {
     filteredBuku() {
-    console.log("Kategori yang dipilih:", this.selectedKategori);
-    return this.bukuList
-      .filter((buku) => {
-        console.log("Buku:", buku);
-        return buku.judul.toLowerCase().includes(this.searchQuery.toLowerCase());
-      })
-      .filter((buku) => {
-        return this.selectedPenulis ? buku.id_penulis === parseInt(this.selectedPenulis) : true;
-      })
-      .filter((buku) => {
-        return this.selectedPenerbit ? buku.id_penerbit === parseInt(this.selectedPenerbit) : true;
-      })
-      .filter((buku) => {
-  return this.selectedKategori ? buku.kategori?.id == this.selectedKategori : true;
-})
+      console.log("Kategori yang dipilih:", this.selectedKategori);
+      return this.bukuList
+        .filter((buku) => {
+          console.log("Buku:", buku);
+          return buku.judul.toLowerCase().includes(this.searchQuery.toLowerCase());
+        })
+        .filter((buku) => {
+          return this.selectedPenulis ? buku.id_penulis === parseInt(this.selectedPenulis) : true;
+        })
+        .filter((buku) => {
+          return this.selectedPenerbit ? buku.id_penerbit === parseInt(this.selectedPenerbit) : true;
+        })
+        .filter((buku) => {
+          return this.selectedKategori ? buku.kategori?.id == this.selectedKategori : true;
+        })
 
-  },
+    },
   },
   methods: {
     async fetchData(apiFunc, targetList, errorMessage) {
@@ -119,6 +124,12 @@ export default {
         console.error(error);
       }
     },
+    resetFilters() {
+      this.searchQuery = "";
+      this.selectedPenulis = "";
+      this.selectedPenerbit = "";
+      this.selectedKategori = "";
+    }
   },
   async mounted() {
     await this.fetchData(getAllBuku, "bukuList", "Gagal memuat data buku.");
@@ -160,6 +171,7 @@ export default {
   transform: scale(1.05);
   outline: none;
 }
+
 .card {
   width: 250px;
   height: 350px;
@@ -258,4 +270,23 @@ export default {
   color: #333;
   margin-top: 5px;
 }
+
+.reset-button {
+  background: red;
+  color: white;
+  font-size: 16px;
+  font-weight: bold;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.reset-button:hover,
+.reset-button:focus {
+  box-shadow: 7px 7px 0 #000;
+  transform: scale(1.05);
+  outline: none;
+  background: darkred;
+}
+
 </style>

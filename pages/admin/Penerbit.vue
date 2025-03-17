@@ -1,16 +1,16 @@
 <template>
   <div class="">
     <Header />
-  <div class="container mt-4">
+    <div class="container mt-6">
 
-    <b-form-group class="mb-3 card-shadow">
-      <b-form-input v-model="searchQuery" placeholder="Cari berdasarkan nama penerbit..." debounce="300" size="lg"
-        class="shadow-sm"></b-form-input>
-    </b-form-group>
+      <b-form-group class="mb-3 card-shadow">
+        <b-form-input v-model="searchQuery" placeholder="Cari berdasarkan nama penerbit..." debounce="300" size="lg"
+          class="shadow-sm"></b-form-input>
+      </b-form-group>
 
-    <b-button variant="success" @click="openAddModal" class="mb-3">
-      Tambah Penerbit <b-icon-plus></b-icon-plus>
-    </b-button>
+      <b-button variant="btn bg-ijomuda" @click="openAddModal" class="mb-3">
+        Tambah Penerbit <b-icon-plus></b-icon-plus>
+      </b-button>
 
       <b-table striped hover bordered responsive :items="paginatedPenerbit" :fields="fields"
         class="bg-light table-hover card-shadow">
@@ -31,27 +31,27 @@
         <p class="mt-2 text-muted">Data Kosong</p>
       </div>
 
-    <b-pagination v-model="currentPage" :total-rows="filteredPenerbit.length" :per-page="perPage"
-      aria-controls="penerbit-table" align="center" class="mt-3" size="lg"></b-pagination>
+      <b-pagination v-model="currentPage" :total-rows="filteredPenerbit.length" :per-page="perPage"
+        aria-controls="penerbit-table" align="center" class="mt-3" size="lg"></b-pagination>
 
-    <!-- Modal Tambah/Edit Penerbit -->
-    <PenerbitModal :showModal="showModal" :penerbitData="currentPenerbit" @submit="handleSubmit"
-      @update:showModal="showModal = $event" />
+      <!-- Modal Tambah/Edit Penerbit -->
+      <PenerbitModal :showModal="showModal" :penerbitData="currentPenerbit" @submit="handleSubmit"
+        @update:showModal="showModal = $event" />
 
-    <!-- Modal Konfirmasi Hapus -->
-    <NotificationModal :isVisible="isDeleteModalVisible" :messageTitle="'Konfirmasi Penghapusan'"
-      :messageBody="'Apakah Anda yakin ingin menghapus penerbit ini?'" @close="closeDeleteModal">
-      <template #footer>
-        <button @click="deletePenerbit" class="btn btn-danger">
-          Ya, Hapus
-        </button>
-        <button @click="closeDeleteModal" class="btn btn-secondary">
-          Batal
-        </button>
-      </template>
-    </NotificationModal>
+      <!-- Modal Konfirmasi Hapus -->
+      <NotificationModal :isVisible="isDeleteModalVisible" :messageTitle="'Konfirmasi Penghapusan'"
+        :messageBody="'Apakah Anda yakin ingin menghapus penerbit ini?'" @close="closeDeleteModal">
+        <template #footer>
+          <button @click="deletePenerbit" class="btn btn-danger">
+            Ya, Hapus
+          </button>
+          <button @click="closeDeleteModal" class="btn btn-secondary">
+            Batal
+          </button>
+        </template>
+      </NotificationModal>
+    </div>
   </div>
-</div>
 </template>
 
 <script>
@@ -75,7 +75,7 @@ export default {
     return {
       penerbit: [],
       searchQuery: "",
-      perPage: 5,
+      perPage: 10,
       currentPage: 1,
       showModal: false,
       currentPenerbit: {
@@ -85,7 +85,7 @@ export default {
       isDeleteModalVisible: false,
       penerbitToDelete: null,
       fields: [
-      { key: "index", label: "No" },
+        { key: "index", label: "No" },
         { key: "nama", label: "Nama Penerbit", sortable: true },
         { key: "actions", label: "Aksi" },
       ],
@@ -119,19 +119,19 @@ export default {
     },
     async handleSubmit(penerbitData) {
       try {
-  if (penerbitData.id) {
-    await updatePenerbit(penerbitData.id, { nama: penerbitData.nama });
-    this.$toast.success("Penerbit berhasil diperbarui!");
-  } else {
-    await createPenerbit({ nama: penerbitData.nama });
-    this.$toast.success("Penerbit berhasil ditambahkan!");
-  }
-  this.showModal = false;
-  await this.fetchPenerbit();
-} catch (error) {
-  const errorMessage = error.message || "Terjadi kesalahan. Silakan coba lagi!";
-  this.$toast.error(errorMessage);
-}
+        if (penerbitData.id) {
+          await updatePenerbit(penerbitData.id, { nama: penerbitData.nama });
+          this.$toast.success("Penerbit berhasil diperbarui!");
+        } else {
+          await createPenerbit({ nama: penerbitData.nama });
+          this.$toast.success("Penerbit berhasil ditambahkan!");
+        }
+        this.showModal = false;
+        await this.fetchPenerbit();
+      } catch (error) {
+        const errorMessage = error.message || "Terjadi kesalahan. Silakan coba lagi!";
+        this.$toast.error(errorMessage);
+      }
 
     },
     async deletePenerbit() {

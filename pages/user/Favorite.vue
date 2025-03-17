@@ -14,42 +14,37 @@
 
     <div v-else class="row">
       <div v-for="item in favorit" :key="item.buku?.id_buku" class="col-md-4 mb-4">
-        <div class="card card-shadow">
+        <div class="card card-shadow"
+          @click="item.buku ? $router.push({ name: 'detail-buku', params: { id_buku: item.buku.id_buku } }) : null">
           <img
             :src="item.buku?.gambar ? (item.buku.gambar.startsWith('http') ? item.buku.gambar : `http://localhost:8080/${item.buku.gambar}`) : 'default.jpg'"
-            class="card-img-top"
-            :alt="item.buku?.judul || 'Gambar Tidak Tersedia'"
-          />
+            class="card-img-top" :alt="item.buku?.judul || 'Gambar Tidak Tersedia'" />
           <div class="card-body">
             <h5 class="card-title">{{ item.buku?.judul || 'Judul Tidak Tersedia' }}</h5>
             <p class="card-text"><strong>Penulis:</strong> {{ item.buku?.penulis?.nama || 'Tidak diketahui' }}</p>
             <p class="card-text"><strong>Penerbit:</strong> {{ item.buku?.penerbit?.nama || 'Tidak diketahui' }}</p>
 
-            <button
-              class="btn btn-danger w-100"
-              @click="hapusFavorit(item.buku?.id_buku)"
-              :disabled="!item.buku"
-            >
+            <button class="btn btn-danger w-100" @click="hapusFavorit(item.buku?.id_buku)" :disabled="!item.buku">
               Hapus dari Favorit
             </button>
           </div>
         </div>
       </div>
     </div>
-
-    <button class="btn btn-dark mt-4" @click="$router.push('/user/listbuku')">Kembali ke Daftar Buku</button>
   </div>
 </template>
 
 <script>
 import { getFavoritByUser, deleteFavorit } from "@/api/favorit";
 import AppNavbar from "~/components/AppNavbar.vue";
+import Footer from "~/components/Footer.vue";
 
 export default {
-  layout:'blank',
+  layout: 'blank',
   name: "FavoritBuku",
   components: {
     AppNavbar,
+    Footer
   },
   data() {
     return {
@@ -103,6 +98,11 @@ export default {
         this.$toast.error(error.message || "Gagal menghapus dari favorit.");
       }
     },
+    goToDetail(buku) {
+    if (buku) {
+      this.$router.push({ name: 'detail-buku', params: { id_buku: buku.id_buku } });
+    }
+  }
   },
 };
 </script>

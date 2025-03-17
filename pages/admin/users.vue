@@ -1,7 +1,7 @@
 <template>
   <div class="">
     <Header />
-    <div class="container mt-4">
+    <div class="container mt-6">
 
       <!-- Input Pencarian -->
       <b-form-group class="mb-3 card-shadow">
@@ -10,7 +10,7 @@
       </b-form-group>
 
       <!-- Tombol Tambah Pengguna -->
-      <b-button variant="success" @click="openAddModal" class="mb-3">Tambah Pengguna
+      <b-button variant="btn bg-ijomuda" @click="openAddModal" class="mb-3">Tambah Pengguna
         <b-icon-plus></b-icon-plus></b-button>
 
       <!-- Card for Table -->
@@ -77,7 +77,7 @@ export default {
     return {
       users: [],
       searchQuery: "",
-      perPage: 5,
+      perPage: 10,
       currentPage: 1,
       showModal: false,
       currentUser: {

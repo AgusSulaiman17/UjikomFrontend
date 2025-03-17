@@ -1,15 +1,15 @@
 <template>
   <div class="buku">
     <Header />
-    <div class="container mt-5">
+    <div class="container mt-6">
 
       <!-- Wrapper untuk kontrol tabel -->
       <div class="d-flex justify-content-between align-items-center mb-3">
         <!-- Tombol Tambah Buku -->
-        <b-button variant="success" @click="openAddModal" class="shadow-sm px-4">
+        <b-button variant="btn bg-ijomuda"  v-if="user && user.role === 'admin'" @click="openAddModal" class="shadow-sm px-4">
           <b-icon-plus class="mr-1"></b-icon-plus> Tambah Buku
         </b-button>
-        <b-button variant="primary" @click="showModalExport = true">
+        <b-button variant="btn bg-ijotua" @click="showModalExport = true">
           Export Data
         </b-button>
         <b-modal v-model="showModalExport" title="Export Data">
@@ -26,16 +26,9 @@
           </div>
         </b-modal>
 
-        <b-button variant="info" @click="openFilterModal">
+        <b-button variant="btn bg-ijomuda" @click="openFilterModal">
           Filter <b-icon-funnel></b-icon-funnel>
         </b-button>
-
-        <!-- Dropdown untuk jumlah data per halaman -->
-        <div class="d-flex align-items-center">
-          <label class="mr-2 font-weight-bold">Tampilkan</label>
-          <b-form-select v-model="perPage" :options="[5, 10, 20, 50]" class="custom-select"></b-form-select>
-          <span class="ml-2">entri</span>
-        </div>
       </div>
 
       <b-table :items="paginatedBuku" :fields="fields" class="card-shadow">
@@ -54,11 +47,11 @@
         </template>
 
 
-        <template #cell(actions)="data">
+        <template #cell(actions)="data"  v-if="user && user.role === 'admin'">
           <b-button variant="primary" size="sm" @click="openEditModal(data.item)" class="btn bg-kuning">
             <b-icon-pencil></b-icon-pencil>
           </b-button>
-          <b-button variant="danger" size="sm" @click="confirmDeleteBuku(data.item)" class="btn bg-merah">
+          <b-button variant="danger" size="sm" @click="confirmDeleteBuku(data.item)" class="btn bg-merah  mt-1">
             <b-icon-trash></b-icon-trash>
           </b-button>
         </template>
@@ -147,7 +140,8 @@ export default {
     return {
       buku: [],
       searchQuery: "",
-      perPage: 5,
+      user: null,
+      perPage: 10,
       currentPage: 1,
       showModal: false,
       showModalExport: false,
@@ -208,7 +202,7 @@ export default {
         const publisherMatch = !this.filter.penerbit || buku.id_penerbit === this.filter.penerbit;
 
         // 🔴 Perbaikan: Pencocokan ISBN harus persis
-       const isbnMatch = !this.filter.isbn.trim() || (buku.isbn && String(buku.isbn).trim().toLowerCase() === this.filter.isbn.trim().toLowerCase());
+        const isbnMatch = !this.filter.isbn.trim() || (buku.isbn && String(buku.isbn).trim().toLowerCase() === this.filter.isbn.trim().toLowerCase());
 
 
         return searchMatch && titleMatch && categoryMatch && authorMatch && publisherMatch && isbnMatch;
@@ -233,27 +227,43 @@ export default {
       console.error("Error parsing user data:", error);
     }
 
+    // Dengarkan event perubahan user dari root instance
+    this.$root.$on("userUpdated", (newUser) => {
+      this.user = newUser;
+    });
+
+    // Ambil data buku dan filter
     await this.fetchBuku();
     await this.fetchFilterData();
   },
+  beforeDestroy() {
+    this.$root.$off("userUpdated");
+  },
+
+beforeDestroy() {
+  // Hapus event listener saat komponen dihancurkan
+  this.$root.$off("userUpdated");
+},
   methods: {
     openEditModal(item) {
       this.currentBuku = { ...item };
+      this.previewGambar = item.gambar || null; // Pastikan preview gambar diperbarui
       this.showModal = true;
     },
     openAddModal() {
       this.currentBuku = {
-        id_buku: null,
-        judul: "",
-        id_penerbit: "",
-        id_penulis: "",
-        id_kategori: "",
-        deskripsi: "",
-        jumlah: 1,
-        isbn: "",
-        gambar: null,
-      };
-      this.showModal = true;
+    id_buku: null,
+    judul: "",
+    id_penerbit: "",
+    id_penulis: "",
+    id_kategori: "",
+    deskripsi: "",
+    jumlah: 1,
+    isbn: "",
+    gambar: null, // Reset gambar agar tidak menampilkan gambar sebelumnya
+  };
+  this.previewGambar = null;
+  this.showModal = true;
     },
     async handleSubmit(formData) {
       try {
@@ -266,7 +276,9 @@ export default {
         }
         this.showModal = false;
         await this.fetchBuku();
-      } catch (error) {
+        this.currentBuku = {};
+      }
+      catch (error) {
         const errorMessage = error.message || "Terjadi kesalahan. Silakan coba lagi!";
         this.$toast.error(errorMessage);
       }
@@ -331,19 +343,19 @@ export default {
     }
     ,
     applyFilter() {
-  this.filter = { ...this.tempFilter };
-  this.showFilterModal = false;
-},
-resetFilter() {
-  this.filter = {
-    judul: "",
-    kategori: "",
-    penulis: "",
-    penerbit: "",
-    isbn: "" // Tambahkan reset untuk ISBN
-  };
-  this.tempFilter = { ...this.filter }; // Sinkronisasi dengan filter sementara
-},
+      this.filter = { ...this.tempFilter };
+      this.showFilterModal = false;
+    },
+    resetFilter() {
+      this.filter = {
+        judul: "",
+        kategori: "",
+        penulis: "",
+        penerbit: "",
+        isbn: "" // Tambahkan reset untuk ISBN
+      };
+      this.tempFilter = { ...this.filter }; // Sinkronisasi dengan filter sementara
+    },
     openFilterModal() {
       this.tempFilter = { ...this.filter }; // Pastikan tempFilter sama dengan filter sebelum modal dibuka
       this.showFilterModal = true;

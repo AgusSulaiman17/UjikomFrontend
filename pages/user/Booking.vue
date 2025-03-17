@@ -46,7 +46,6 @@
         </template>
       </NotificationModal>
     </div>
-
   </div>
 </template>
 
@@ -54,11 +53,13 @@
 import { getBookingByUserId, deleteBooking } from "@/api/peminjaman";
 import AppNavbar from "~/components/AppNavbar.vue";
 import NotificationModal from "@/components/NotificationModal.vue";
+import Footer from "~/components/Footer.vue";
 
 export default {
   components: {
     AppNavbar,
     NotificationModal,
+    Footer
   },
   layout: "blank",
   data() {

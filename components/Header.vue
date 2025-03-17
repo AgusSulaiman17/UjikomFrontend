@@ -1,7 +1,7 @@
 <template>
   <header class="header mt-3">
-    <div class="container">
-      <h1 class="logo" @click="$router.push('/')">{{ pageTitle }}</h1>
+    <div class="container ">
+      <h1 class="logo">{{ pageTitle }}</h1>
       <nav class="nav">
         <img src="../static/images/logoFinal.svg" alt="">
       </nav>
@@ -33,12 +33,15 @@ export default {
 
 <style scoped>
 .header {
+  position: fixed;
+  top: 0;
   background: #116647;
   padding: 1rem;
   border-radius: 1rem;
   border: 0.3vmin solid #05060f;
   box-shadow: 0.2rem 0.2rem #05060f;
   width: 1240px;
+  z-index: 3;
 }
 
 .container {

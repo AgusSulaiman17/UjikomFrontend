@@ -1,6 +1,6 @@
 <template>
-  <b-modal v-model="showModal" :title="isEditMode ? 'Edit Buku' : 'Tambah Buku'" size="lg" @ok="submitForm"
-     @hide="closeModal">
+  <b-modal v-model="modalVisible" :title="isEditMode ? 'Edit Buku' : 'Tambah Buku'" size="lg" @ok="submitForm"
+    @hide="closeModal">
     <b-form @submit.prevent="submitForm">
       <b-form-group label="Judul Buku" label-for="judul">
         <b-form-input id="judul" v-model="form.judul" required></b-form-input>
@@ -41,27 +41,19 @@
       <b-form-group label="Jumlah Buku" label-for="jumlah">
         <b-form-input id="jumlah" v-model="form.jumlah" type="number" required></b-form-input>
       </b-form-group>
-
       <b-form-group label="Gambar Buku" label-for="gambar">
-  <!-- Tampilkan preview gambar -->
-  <div v-if="form.gambar" class="mb-3">
-    <b-img
-      :src="previewGambar || form.gambar"
-      alt="Gambar Buku"
-      thumbnail
-      width="100"
-      class="mb-2">
-    </b-img>
-    <b-button variant="danger" size="sm" @click="hapusGambar">Hapus Gambar</b-button>
-  </div>
-  <!-- Input untuk mengunggah gambar baru -->
-  <b-form-file
-    id="gambar"
-    @change="handleFileUpload"
-    :placeholder="form.gambar ? 'Ganti gambar...' : 'Pilih gambar...'"
-    :accept="'image/*'">
-  </b-form-file>
-</b-form-group>
+        <!-- Tampilkan preview gambar -->
+        <div class="text-center mb-3">
+          <img v-if="previewGambar || form.gambar"
+            :src="previewGambar || (typeof form.gambar === 'string' && form.gambar.startsWith('http') ? form.gambar : 'http://localhost:8080/' + form.gambar)"
+            alt="Preview Image" class="rounded img-thumbnail border border-secondary" width="120" height="120" />
+        </div>
+
+        <!-- Input untuk mengunggah gambar baru -->
+        <b-form-file id="gambar" @change="handleFileUpload"
+          :placeholder="form.gambar ? 'Ganti gambar...' : 'Pilih gambar...'" :accept="'image/*'">
+        </b-form-file>
+      </b-form-group>
 
     </b-form>
   </b-modal>
@@ -131,6 +123,14 @@ export default {
     },
   },
   computed: {
+    modalVisible: {
+      get() {
+        return this.showModal;
+      },
+      set(value) {
+        this.$emit("update:showModal", value);
+      },
+    },
     isEditMode() {
       return this.form.id_buku !== null && this.form.id_buku !== undefined;
     },
@@ -138,24 +138,37 @@ export default {
   methods: {
     closeModal() {
       this.$emit("update:showModal", false);
+      this.form = {
+        id_buku: null,
+        judul: "",
+        id_penerbit: "",
+        id_penulis: "",
+        id_kategori: "",
+        deskripsi: "",
+        jumlah: 1,
+        isbn: "",
+        gambar: null,
+        previewGambar: null,
+      };
+      this.previewGambar = null;
     },
     handleFileUpload(event) {
-    const file = event.target.files[0];
-    if (file) {
-      this.form.gambar = file;
+      const file = event.target.files[0];
+      if (file) {
+        this.form.gambar = file;
 
-      // Buat preview gambar
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        this.previewGambar = e.target.result;
-      };
-      reader.readAsDataURL(file);
-    }
-  },
-  hapusGambar() {
-    this.form.gambar = null;
-    this.previewGambar = null;
-  },
+        // Gunakan FileReader untuk membuat preview gambar
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          this.previewGambar = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      }
+    },
+    hapusGambar() {
+      this.form.gambar = null;
+      this.previewGambar = null;
+    },
     async fetchPenerbit() {
       try {
         const response = await getAllPenerbit();
@@ -211,6 +224,4 @@ export default {
 };
 </script>
 
-<style scoped>
-
-</style>
+<style scoped></style>

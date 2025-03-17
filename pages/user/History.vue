@@ -9,8 +9,8 @@
 
     <div v-if="peminjamanDikembalikan.length">
       <div v-for="(item) in peminjamanDikembalikan" :key="item.id_peminjaman" class="peminjaman-item">
-        <div class="card shadow-sm">
-          <div class="row no-gutters card-shadow">
+        <div class="card" @click="goToDetail(item)">
+          <div class="row no-gutters">
             <div class="col-md-3 d-flex justify-content-center align-items-center">
               <img
                 :src="(item.buku?.gambar) ? ((item.buku?.gambar).startsWith('http') ? (item.buku?.gambar) : `http://localhost:8080/${(item.buku?.gambar)}`) : 'default.jpg'"
@@ -44,9 +44,13 @@
 
 <script>
 import { getPeminjamanByUserId, deletePeminjamanByUser } from '~/api/peminjaman';
+import Footer from '~/components/Footer.vue';
 
 export default {
   layout:'blank',
+  components :{
+    Footer
+  },
   data() {
     return {
       peminjaman: [],
@@ -95,7 +99,12 @@ export default {
         month: 'long',
         year: 'numeric'
       });
+    },
+    goToDetail(item) {
+    if (item && item.id_buku) {
+      this.$router.push({ name: 'detail-buku', params: { id_buku: item.id_buku } });
     }
+  }
   }
 };
 </script>

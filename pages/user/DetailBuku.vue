@@ -37,7 +37,7 @@
           </button>
 
           <!-- Tombol Kembali -->
-          <button class="btn btn-dark mt-3 w-50" @click="$router.push('/user/listbuku')">Kembali</button>
+          <button class="btn btn-dark mt-3 w-50" @click="$router.push('/user/listbuku')">Kembali Ke Daftar Buku</button>
 
           <!-- Notifikasi -->
           <div v-if="successMessage" class="alert alert-success mt-3">{{ successMessage }}</div>
@@ -53,12 +53,14 @@ import { getBukuById } from "@/api/buku";
 import { createBooking } from "@/api/peminjaman";
 import { addFavorit, getFavoritByUser, deleteFavorit } from "@/api/favorit";
 import AppNavbar from "~/components/AppNavbar.vue";
+import Footer from "~/components/Footer.vue";
 
 export default {
   layout: "blank",
   name: "DetailBuku",
   components: {
     AppNavbar,
+    Footer
   },
   data() {
     return {

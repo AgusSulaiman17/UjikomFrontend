@@ -78,7 +78,7 @@
                   class="avatar" />
                 <em class="text-ijotua">{{ user.name }}</em>
               </template>
-              <b-dropdown-item @click="$router.push({ name: 'profile', params: { id_user: user.id_user } })">
+              <b-dropdown-item @click="$router.push({ name: 'profileuser', params: { id: user.id } })">
                 Profile <b-icon-person></b-icon-person>
               </b-dropdown-item>
               <b-dropdown-item @click.prevent="logout">
@@ -185,7 +185,7 @@ export default {
   top: 0;
   left: 0;
   width: 100%;
-  z-index: 9999;
+  z-index: 100;
   backdrop-filter: blur(10px);
   background: rgba(255, 255, 255, 0.9);
   background: transparent;

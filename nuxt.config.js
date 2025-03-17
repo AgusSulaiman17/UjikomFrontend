@@ -58,6 +58,11 @@ export default {
           path: '/profile/:id',
           component: resolve(__dirname, 'pages/Profile.vue'),
         },
+        {
+          name: 'profileuser',
+          path: '/profileuser/:id',
+          component: resolve(__dirname, 'pages/ProfileUser.vue'),
+        },
       );
     }
   }

@@ -44,9 +44,13 @@
 
 <script>
 import { getPeminjamanByUserId } from '~/api/peminjaman';
+import Footer from '~/components/Footer.vue';
 
 export default {
   layout: 'blank',
+  components:{
+    Footer
+  },
   data() {
     return {
       peminjaman: [],

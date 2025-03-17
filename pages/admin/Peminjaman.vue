@@ -1,13 +1,13 @@
 <template>
   <div>
     <Header />
-    <div class="container mt-4">
+    <div class="container mt-6">
       <b-row class="mb-3">
-        <b-button variant="primary" @click="showFilterModal = true" class="mb-3">
+        <b-button variant="btn bg-ijomuda" @click="showFilterModal = true" class="mb-3">
           Filter Peminjaman
         </b-button>
       </b-row>
-      <b-button variant="primary" @click="showModalExport = true" class="mb-3">
+      <b-button variant="btn bg-ijotua" @click="showModalExport = true" class="mb-3">
         Export Data
       </b-button>
 
@@ -24,7 +24,7 @@
             Print
           </b-button>
         </div>
-      </b-modal><b-button variant="success" @click="openAddModal" class="mb-3" :disabled="isLoadingSubmit">
+      </b-modal><b-button variant="btn bg-ijomuda" @click="openAddModal" class="mb-3" :disabled="isLoadingSubmit">
         <b-icon v-if="isLoadingSubmit" icon="arrow-clockwise" animation="spin"></b-icon>
         <span v-else>Tambah Peminjaman</span> <b-icon-plus></b-icon-plus>
       </b-button>
@@ -166,7 +166,7 @@ export default {
       peminjaman: [],
       selectedStatus: "",
       searchQuery: "",
-      perPage: 5,
+      perPage: 10,
       isLoadingSubmit: false,
       isLoadingReturn: false,
       currentPage: 1,

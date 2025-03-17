@@ -1,7 +1,7 @@
 <template>
   <div class="">
   <Header />
-  <div class="mt-5">
+  <div class="mt-6">
     <div class="cards-container">
       <div v-for="(item, index) in items" :key="index" class="card feature-card">
         <div class="card-details">
@@ -48,6 +48,9 @@ export default {
       return [
         { title: "Users", count: this.totalUsers, link: "/admin/users", icon: "person" },
         { title: "Peminjaman", count: this.totalPeminjaman, link: "/admin/peminjaman", icon: "file-text" },
+        { title: "Buku", count: this.totalBuku, link: "/admin/buku", icon: "book" },
+        { title: "Booking", count: this.totalBooking, link: "/admin/booking", icon: "file-text" },
+        { title: "Pendaftar", count: this.totalUnApp, link: "/admin/unappusers", icon: "file-text" },
       ];
     },
   },

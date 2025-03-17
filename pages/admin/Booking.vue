@@ -1,7 +1,7 @@
 <template>
   <div>
     <Header />
-    <div class="container mt-4">
+    <div class="container mt-6">
       <!-- Input Pencarian -->
       <b-form-group class="mb-3 card-shadow">
         <b-form-input v-model="searchQuery" placeholder="Cari berdasarkan nama user..." debounce="300" size="lg"
@@ -25,6 +25,9 @@
             @click="showApproveModal(data.item.id_peminjaman)" class="btn bg-hijau">
             <b-icon-check></b-icon-check> Setujui
           </b-button>
+          <b-button variant="danger" size="sm" @click="showDeleteModal(data.item.id_peminjaman)">
+            <b-icon-trash></b-icon-trash> Batalkan
+          </b-button>
         </template>
       </b-table>
       <div v-if="paginatedBookings.length === 0" class="text-center p-3">
@@ -40,25 +43,36 @@
       <NotificationModal :isVisible="isApproveModalVisible" :messageTitle="'Konfirmasi Persetujuan'"
         :messageBody="'Apakah Anda yakin ingin menyetujui pemesanan ini?'" @close="closeApproveModal">
         <template #footer>
-  <button @click="confirmApproveBooking"
-          class="btn btn-success"
-          :disabled="isLoadingApprove">
-    <b-icon v-if="isLoadingApprove" icon="arrow-clockwise" animation="spin"></b-icon>
-    <span v-else>Ya, Setujui</span>
-  </button>
-  <button @click="closeApproveModal" class="btn btn-secondary" :disabled="isLoadingApprove">
-    Batal
-  </button>
-</template>
-
-
+          <button @click="confirmApproveBooking" class="btn btn-success" :disabled="isLoadingApprove">
+            <b-icon v-if="isLoadingApprove" icon="arrow-clockwise" animation="spin"></b-icon>
+            <span v-else>Ya, Setujui</span>
+          </button>
+          <button @click="closeApproveModal" class="btn btn-secondary" :disabled="isLoadingApprove">
+            Batal
+          </button>
+        </template>
       </NotificationModal>
+
+      <!-- Modal Konfirmasi Hapus -->
+      <NotificationModal :isVisible="isDeleteModalVisible" :messageTitle="'Konfirmasi Pembatalan'"
+        :messageBody="'Apakah Anda yakin ingin Membatalkan booking ini?'" @close="closeDeleteModal">
+        <template #footer>
+          <button @click="confirmDeleteBooking" class="btn btn-danger" :disabled="isLoadingDelete">
+            <b-icon v-if="isLoadingDelete" icon="arrow-clockwise" animation="spin"></b-icon>
+            <span v-else>Ya</span>
+          </button>
+          <button @click="closeDeleteModal" class="btn btn-secondary" :disabled="isLoadingDelete">
+            Batal
+          </button>
+        </template>
+      </NotificationModal>
+
     </div>
   </div>
 </template>
 
 <script>
-import { getAllBookings, approveBooking } from "~/api/peminjaman";
+import { getAllBookings, approveBooking, deleteBooking } from "~/api/peminjaman";
 import Header from "~/components/Header.vue";
 import NotificationModal from "~/components/NotificationModal.vue";
 
@@ -68,11 +82,12 @@ export default {
     return {
       bookings: [],
       searchQuery: "",
-      perPage: 5,
+      perPage: 10,
       currentPage: 1,
-       isLoadingApprove: false,
-      showModal: false,
+      isLoadingApprove: false,
+      isLoadingDelete: false,
       isApproveModalVisible: false,
+      isDeleteModalVisible: false,
       selectedBookingId: null,
       fields: [
         { key: "index", label: "No" },
@@ -119,27 +134,47 @@ export default {
       this.selectedBookingId = null;
     },
     async confirmApproveBooking() {
-  if (!this.selectedBookingId) return;
+      if (!this.selectedBookingId) return;
 
-  this.isLoadingApprove = true; // Aktifkan loading
-  try {
-    await approveBooking(this.selectedBookingId);
+      this.isLoadingApprove = true;
+      try {
+        await approveBooking(this.selectedBookingId);
+        this.bookings = this.bookings.filter(
+          (booking) => booking.id_peminjaman !== this.selectedBookingId
+        );
+        this.$toast.success("Booking berhasil disetujui!");
+      } catch (error) {
+        this.$toast.error("Gagal menyetujui booking!");
+      } finally {
+        this.isLoadingApprove = false;
+        this.closeApproveModal();
+      }
+    },
+    showDeleteModal(id) {
+      this.selectedBookingId = id;
+      this.isDeleteModalVisible = true;
+    },
+    closeDeleteModal() {
+      this.isDeleteModalVisible = false;
+      this.selectedBookingId = null;
+    },
+    async confirmDeleteBooking() {
+      if (!this.selectedBookingId) return;
 
-    // Hapus item yang sudah disetujui dari daftar bookings
-    this.bookings = this.bookings.filter(
-      (booking) => booking.id_peminjaman !== this.selectedBookingId
-    );
-
-    this.$toast.success("Booking berhasil disetujui!");
-  } catch (error) {
-    this.$toast.error("Gagal menyetujui booking!");
-  } finally {
-    this.isLoadingApprove = false; // Matikan loading setelah selesai
-    this.closeApproveModal();
-  }
-}
-
-
+      this.isLoadingDelete = true;
+      try {
+        await deleteBooking(this.selectedBookingId);
+        this.bookings = this.bookings.filter(
+          (booking) => booking.id_peminjaman !== this.selectedBookingId
+        );
+        this.$toast.success("Booking berhasil dihapus!");
+      } catch (error) {
+        this.$toast.error("Gagal menghapus booking!");
+      } finally {
+        this.isLoadingDelete = false;
+        this.closeDeleteModal();
+      }
+    },
   },
 };
 </script>
@@ -171,10 +206,6 @@ export default {
 .b-pagination .page-item .page-link {
   border-radius: 20px;
   padding: 8px 15px;
-}
-
-.card {
-  margin-top: 20px;
 }
 
 .bg-hijau {
