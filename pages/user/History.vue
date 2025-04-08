@@ -23,10 +23,10 @@
                 <h5 class="card-title">{{ item.buku ? item.buku.judul : 'Data buku tidak tersedia' }}</h5>
                 <p class="card-text"><strong>Tanggal Pinjam:</strong> {{ formatTanggal(item.tanggal_pinjam) }}</p>
                 <p class="card-text"><strong>Tanggal Kembali:</strong> {{ formatTanggal(item.tanggal_kembali) }}</p>
-                <p class="card-text">
+                <!-- <p class="card-text">
                   <strong>Status:</strong>
                   <span class="badge bg-success">Dikembalikan</span>
-                </p>
+                </p> -->
                 <button class="btn btn-danger mt-2" @click="hapusPeminjaman(item.id_peminjaman)">
                   Hapus Riwayat
                 </button>

@@ -167,6 +167,7 @@ export default {
       selectedStatus: "",
       searchQuery: "",
       perPage: 10,
+      alamatLengkap: "Jl. Pendidikan No. 45, Bandung",
       isLoadingSubmit: false,
       isLoadingReturn: false,
       currentPage: 1,
@@ -218,7 +219,7 @@ export default {
       userOptions: [{ value: "", text: "Semua User" }],
       fields: [
         { key: "index", label: "No" },
-        { key: "id_peminjaman", label: "ID Peminjaman", sortable: true },
+        // { key: "id_peminjaman", label: "ID Peminjaman", sortable: true },
         { key: "user.name", label: "Nama Peminjam", sortable: true },
         { key: "buku.judul", label: "Judul Buku", sortable: true },
         { key: "tanggal_pinjam", label: "Tanggal Pinjam", sortable: true },
@@ -230,6 +231,18 @@ export default {
     };
   },
   computed: {
+    filterKeterangan() {
+      const filters = [];
+
+      if (this.selectedUser) filters.push(`Nama: ${this.selectedUser}`);
+      if (this.selectedBook) filters.push(`Judul Buku mengandung: "${this.selectedBook}"`);
+      if (this.selectedMonth) filters.push(`Bulan: ${this.selectedMonth}`);
+      if (this.selectedDate) filters.push(`Tanggal: ${this.selectedDate}`);
+      if (this.selectedStatus) filters.push(`Status: ${this.selectedStatus}`);
+      if (this.selectedId) filters.push(`ID: ${this.selectedId}`);
+
+      return filters.length ? `Filter yang diterapkan: ${filters.join(", ")}` : "Tanpa filter";
+    },
     approvedPeminjaman() {
       return this.peminjaman.filter(peminjaman => peminjaman.status === "disetujui");
     },
@@ -473,110 +486,146 @@ export default {
       XLSX.utils.book_append_sheet(wb, ws, "Peminjaman Buku");
       XLSX.writeFile(wb, `peminjaman_buku_${date}.xlsx`);
     },
+    async exportToPDF() {
+  const doc = new jsPDF();
+  const date = this.getFormattedDate();
+  this.loading = true; // tampilkan spinner misalnya
+  await this.$nextTick(); // biar UI sempat update
 
-    exportToPDF() {
-      const doc = new jsPDF();
-      const date = this.getFormattedDate();
+  doc.setFontSize(16);
+  doc.text("Laporan Peminjaman Buku", 105, 15, { align: "center" });
+  doc.line(10, 20, 200, 20);
 
-      doc.setFontSize(16);
-      doc.text("Laporan Peminjaman Buku", 105, 15, { align: "center" });
-      doc.line(10, 20, 200, 20);
+  // Tambahan alamat dan filter
+  doc.setFontSize(10);
+  doc.text(`Alamat: ${this.alamatLengkap}`, 14, 27);
+  doc.text(`${this.filterKeterangan}`, 14, 33);
 
-      const headers = [["No", "Nama Peminjam", "Judul Buku", "Tanggal Pinjam", "Tanggal Pengembalian", "Status Peminjaman", "Denda"]];
-      const data = this.filteredPeminjaman.map((p, index) => [
-        index + 1,
-        p.user.name,
-        p.buku.judul,
-        this.formatDateTime(p.tanggal_pinjam),
-        this.formatDateTime(p.diperbarui_pada),
-        p.status_kembali ? "Sudah Dikembalikan" : "Dipinjam",
-        p.denda || 0,
-      ]);
+  const headers = [["No", "Nama Peminjam", "Judul Buku", "Tanggal Pinjam", "Tanggal Pengembalian", "Status Peminjaman", "Denda"]];
+  const data = this.filteredPeminjaman.map((p, index) => [
+    index + 1,
+    p.user.name,
+    p.buku.judul,
+    this.formatDateTime(p.tanggal_pinjam),
+    this.formatDateTime(p.diperbarui_pada),
+    p.status_kembali ? "Sudah Dikembalikan" : "Dipinjam",
+    p.denda || 0,
+  ]);
 
-      doc.autoTable({ head: headers, body: data, startY: 30 });
+  doc.autoTable({ head: headers, body: data, startY: 38 });
 
-      const finalY = doc.lastAutoTable.finalY + 40;
-      doc.setFontSize(12);
-      doc.text("Mengetahui,", 140, finalY);
-      doc.text("_________________________", 140, finalY + 25);
-      doc.setFontSize(10);
-      doc.text(this.user.name || "Tidak Diketahui", 140, finalY + 35);
-      doc.text(this.user.role || "Tidak Diketahui", 140, finalY + 42);
-      doc.text(`Tanggal Export: ${date}`, 140, finalY + 50);
+  const finalY = doc.lastAutoTable.finalY + 40;
+  doc.setFontSize(12);
+  doc.text("Mengetahui,", 140, finalY);
+  doc.text("_________________________", 140, finalY + 25);
+  doc.setFontSize(10);
+  doc.text(this.user.name || "Tidak Diketahui", 140, finalY + 35);
+  doc.text(this.user.role || "Tidak Diketahui", 140, finalY + 42);
+  doc.text(`Tanggal Export: ${date}`, 140, finalY + 50);
 
-      doc.save(`peminjaman_buku_${date}.pdf`);
-    },
+  doc.save(`peminjaman_buku_${date}.pdf`);
+  this.loading = false; // jangan lupa matikan spinner
+},
+async printTable() {
+  const date = this.getFormattedDate();
+  this.loading = true; // tampilkan spinner
 
-    printTable() {
-      const date = this.getFormattedDate();
-      const printContent = document.createElement("div");
+  await this.$nextTick(); // tunggu UI update
 
-      const title = document.createElement("h2");
-      title.style.textAlign = "center";
-      title.innerText = "Laporan Peminjaman Buku";
-      printContent.appendChild(title);
+  const printContent = document.createElement("div");
 
-      const separator = document.createElement("hr");
-      separator.style.border = "1px solid black";
-      printContent.appendChild(separator);
+  const title = document.createElement("h2");
+  title.style.textAlign = "center";
+  title.innerText = "Laporan Peminjaman Buku";
+  printContent.appendChild(title);
 
-      const table = document.createElement("table");
-      table.border = "1";
-      table.style.width = "100%";
-      table.style.borderCollapse = "collapse";
+  const line = document.createElement("hr");
+  line.style.border = "1px solid black";
+  printContent.appendChild(line);
 
-      const thead = document.createElement("thead");
-      const headerRow = document.createElement("tr");
-      ["No", "Nama Peminjam", "Judul Buku", "Tanggal Pinjam", "Tanggal Pengembalian", "Status Peminjaman", "Denda"].forEach((text) => {
-        const th = document.createElement("th");
-        th.style.border = "1px solid black";
-        th.style.padding = "5px";
-        th.innerText = text;
-        headerRow.appendChild(th);
-      });
-      thead.appendChild(headerRow);
-      table.appendChild(thead);
+  // Alamat dan filter rata kiri
+  const alamat = document.createElement("p");
+  alamat.style.textAlign = "left";
+  alamat.style.fontSize = "12px";
+  alamat.innerText = `Alamat: ${this.alamatLengkap}`;
+  printContent.appendChild(alamat);
 
-      const tbody = document.createElement("tbody");
-      this.filteredPeminjaman.forEach((p, index) => {  // Menggunakan data yang telah difilter
-        const tr = document.createElement("tr");
-        [
-          index + 1,
-          p.user?.name || "-",
-          p.buku?.judul || "-",
-          this.formatDateTime(p.tanggal_pinjam),
-          this.formatDateTime(p.diperbarui_pada),
-          p.status_kembali ? "Sudah Dikembalikan" : "Dipinjam",
-          p.denda || "0"
-        ].forEach((text) => {
-          const td = document.createElement("td");
-          td.style.border = "1px solid black";
-          td.style.padding = "5px";
-          td.innerText = text;
-          tr.appendChild(td);
-        });
-        tbody.appendChild(tr);
-      });
-      table.appendChild(tbody);
-      printContent.appendChild(table);
+  const keteranganFilter = document.createElement("p");
+  keteranganFilter.style.textAlign = "left";
+  keteranganFilter.style.fontSize = "12px";
+  keteranganFilter.innerText = this.filterKeterangan;
+  printContent.appendChild(keteranganFilter);
 
-      const signature = document.createElement("div");
-      signature.style.textAlign = "right";
-      signature.style.marginTop = "40px";
-      signature.innerHTML = `
+  const table = document.createElement("table");
+  table.border = "1";
+  table.style.width = "100%";
+  table.style.borderCollapse = "collapse";
+  table.style.fontSize = "12px";
+
+  const thead = document.createElement("thead");
+  const headerRow = document.createElement("tr");
+  ["No", "Nama Peminjam", "Judul Buku", "Tanggal Pinjam", "Tanggal Pengembalian", "Status Peminjaman", "Denda"].forEach((text) => {
+    const th = document.createElement("th");
+    th.style.border = "1px solid black";
+    th.style.padding = "5px";
+    th.innerText = text;
+    headerRow.appendChild(th);
+  });
+  thead.appendChild(headerRow);
+  table.appendChild(thead);
+
+  const tbody = document.createElement("tbody");
+  this.filteredPeminjaman.forEach((p, index) => {
+    const tr = document.createElement("tr");
+    [
+      index + 1,
+      p.user?.name || "-",
+      p.buku?.judul || "-",
+      this.formatDateTime(p.tanggal_pinjam),
+      this.formatDateTime(p.diperbarui_pada),
+      p.status_kembali ? "Sudah Dikembalikan" : "Dipinjam",
+      p.denda || "0"
+    ].forEach((text) => {
+      const td = document.createElement("td");
+      td.style.border = "1px solid black";
+      td.style.padding = "5px";
+      td.innerText = text;
+      tr.appendChild(td);
+    });
+    tbody.appendChild(tr);
+  });
+  table.appendChild(tbody);
+  printContent.appendChild(table);
+
+  const signature = document.createElement("div");
+  signature.style.textAlign = "right";
+  signature.style.marginTop = "40px";
+  signature.style.fontSize = "12px";
+  signature.innerHTML = `
     <p>Mengetahui,</p>
     <pre>_________________________</pre>
     <p><b>${this.user?.name || "Tidak Diketahui"}</b></p>
     <p>${this.user?.role || "Tidak Diketahui"}</p>
     <p><b>Tanggal Export:</b> ${date}</p>
   `;
-      printContent.appendChild(signature);
+  printContent.appendChild(signature);
 
-      const printWindow = window.open("", "_blank");
-      printWindow.document.write(printContent.innerHTML);
-      printWindow.document.close();
-      printWindow.print();
-    }
+  const printWindow = window.open("", "_blank");
+  printWindow.document.write(`
+    <html>
+      <head><title>Laporan Peminjaman Buku</title></head>
+      <body>${printContent.innerHTML}</body>
+    </html>
+  `);
+  printWindow.document.close();
+  printWindow.focus();
+
+  setTimeout(() => {
+    printWindow.print();
+    printWindow.close();
+    this.loading = false; // matikan spinner setelah print selesai
+  }, 500); // beri delay sebentar supaya isi dimuat
+}
   }
 };
 </script>

@@ -32,7 +32,6 @@ export default {
   components: {
     Header
   },
-  middleware:'petugas',
   data() {
     return {
       totalBuku: 0,

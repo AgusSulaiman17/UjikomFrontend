@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div class="container mt-5">
+    <div class="container mt-6">
       <div class="row justify-content-center">
         <div class="col-md-8">
           <div class="card shadow-lg border-0 rounded-lg">
@@ -14,7 +14,6 @@
               <hr />
 
               <div class="text-start">
-                <p><i class="bi bi-person-badge-fill text-primary"></i> <strong>Role:</strong> {{ user.role }}</p>
                 <p><i class="bi bi-geo-alt-fill text-danger"></i> <strong>Alamat:</strong> {{ user.alamat }}</p>
                 <p><i class="bi bi-telephone-fill text-success"></i> <strong>No Telepon:</strong> {{ user.no_telepon }}</p>
               </div>
@@ -57,7 +56,7 @@
           <b-form-input v-model="editedUser.no_telepon" readonly></b-form-input>
         </b-form-group>
 
-        <b-form-group label="Password Baru">
+        <b-form-group label="Password Baru ( Kosongkan jika tidak ingin mengubah )">
           <b-form-input type="password" v-model="editedUser.password"></b-form-input>
         </b-form-group>
 
@@ -72,8 +71,12 @@
 
 <script>
 import { getUserById, updateUser } from "@/api/users";
+import Header from "~/components/Header.vue";
 
 export default {
+  components:{
+    Header
+  },
   data() {
     return {
       user: {},

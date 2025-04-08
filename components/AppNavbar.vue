@@ -23,7 +23,7 @@
             <b-nav-item v-if="user.role === 'admin'"></b-nav-item>
             <b-nav-item v-if="user.role === 'user'">
               <nuxt-link to="/user/Dashboard" class="nav-link-animated" exact-active-class="active-link">
-                <BIconHouse /> Dashboard
+                <BIconHouse /> Beranda
               </nuxt-link>
             </b-nav-item>
             <b-nav-item v-if="user.role === 'admin'">
@@ -81,7 +81,7 @@
               <b-dropdown-item @click="$router.push({ name: 'profileuser', params: { id: user.id } })">
                 Profile <b-icon-person></b-icon-person>
               </b-dropdown-item>
-              <b-dropdown-item @click.prevent="logout">
+              <b-dropdown-item @click="logout">
                 <span v-if="!isLoading">Sign Out</span>
                 <span v-else class="spinner"></span>
                 <b-icon-box-arrow-right></b-icon-box-arrow-right>
@@ -135,14 +135,14 @@ export default {
       this.lastScrollTop = currentScroll <= 0 ? 0 : currentScroll;
     },
     logout() {
-      localStorage.removeItem("user");
-      localStorage.removeItem("token");
-      this.$router.push("/login");
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      this.$router.push('/login');
     },
     confirmLogout() {
-      localStorage.removeItem("user");
-      localStorage.removeItem("token");
-      this.$router.push("/login");
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      this.$router.push('/login');
     },
     cancelLogout() {
       this.showLogoutConfirmationModal = false;

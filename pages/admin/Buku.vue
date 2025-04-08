@@ -6,12 +6,13 @@
       <!-- Wrapper untuk kontrol tabel -->
       <div class="d-flex justify-content-between align-items-center mb-3">
         <!-- Tombol Tambah Buku -->
-        <b-button variant="btn bg-ijomuda"  v-if="user && user.role === 'admin'" @click="openAddModal" class="shadow-sm px-4">
+        <b-button variant="btn bg-ijomuda" v-if="user && user.role === 'admin'" @click="openAddModal"
+          class="shadow-sm px-4">
           <b-icon-plus class="mr-1"></b-icon-plus> Tambah Buku
         </b-button>
-        <b-button variant="btn bg-ijotua" @click="showModalExport = true">
+        <!-- <b-button variant="btn bg-ijotua" @click="showModalExport = true">
           Export Data
-        </b-button>
+        </b-button> -->
         <b-modal v-model="showModalExport" title="Export Data">
           <div class="text-center">
             <b-button variant="info" @click="exportToPDF" class="mb-3 ml-2">
@@ -47,7 +48,7 @@
         </template>
 
 
-        <template #cell(actions)="data"  v-if="user && user.role === 'admin'">
+        <template #cell(actions)="data" v-if="user && user.role === 'admin'">
           <b-button variant="primary" size="sm" @click="openEditModal(data.item)" class="btn bg-kuning">
             <b-icon-pencil></b-icon-pencil>
           </b-button>
@@ -145,6 +146,7 @@ export default {
       currentPage: 1,
       showModal: false,
       showModalExport: false,
+      alamatLengkap: "Jl. Pendidikan No. 45, Bandung",
       currentBuku: {
         id_buku: null,
         judul: "",
@@ -208,6 +210,18 @@ export default {
         return searchMatch && titleMatch && categoryMatch && authorMatch && publisherMatch && isbnMatch;
       });
     },
+    getFilterKeterangan() {
+      const filters = [];
+
+      if (this.searchQuery.trim()) filters.push(`Pencarian: ${this.searchQuery}`);
+      if (this.filter.judul.trim()) filters.push(`Judul: ${this.filter.judul}`);
+      if (this.filter.kategori) filters.push(`Kategori ID: ${this.filter.kategori}`);
+      if (this.filter.penulis) filters.push(`Penulis ID: ${this.filter.penulis}`);
+      if (this.filter.penerbit) filters.push(`Penerbit ID: ${this.filter.penerbit}`);
+      if (this.filter.isbn.trim()) filters.push(`ISBN: ${this.filter.isbn}`);
+
+      return filters.length ? filters.join(" | ") : "Tanpa Filter";
+    },
     paginatedBuku() {
       const start = (this.currentPage - 1) * this.perPage;
       return this.filteredBuku.slice(start, start + this.perPage);
@@ -240,10 +254,10 @@ export default {
     this.$root.$off("userUpdated");
   },
 
-beforeDestroy() {
-  // Hapus event listener saat komponen dihancurkan
-  this.$root.$off("userUpdated");
-},
+  beforeDestroy() {
+    // Hapus event listener saat komponen dihancurkan
+    this.$root.$off("userUpdated");
+  },
   methods: {
     openEditModal(item) {
       this.currentBuku = { ...item };
@@ -252,18 +266,18 @@ beforeDestroy() {
     },
     openAddModal() {
       this.currentBuku = {
-    id_buku: null,
-    judul: "",
-    id_penerbit: "",
-    id_penulis: "",
-    id_kategori: "",
-    deskripsi: "",
-    jumlah: 1,
-    isbn: "",
-    gambar: null, // Reset gambar agar tidak menampilkan gambar sebelumnya
-  };
-  this.previewGambar = null;
-  this.showModal = true;
+        id_buku: null,
+        judul: "",
+        id_penerbit: "",
+        id_penulis: "",
+        id_kategori: "",
+        deskripsi: "",
+        jumlah: 1,
+        isbn: "",
+        gambar: null, // Reset gambar agar tidak menampilkan gambar sebelumnya
+      };
+      this.previewGambar = null;
+      this.showModal = true;
     },
     async handleSubmit(formData) {
       try {
@@ -399,6 +413,11 @@ beforeDestroy() {
       // Garis pemisah dari ujung kiri ke ujung kanan
       doc.line(10, 20, 200, 20);
 
+      // Tambahan alamat dan filter
+      doc.setFontSize(10);
+      doc.text(`Alamat: ${this.alamatLengkap || '-'}`, 14, 27);
+      doc.text(`Filter: ${this.getFilterKeterangan || '-'}`, 14, 33);
+
       // Header tabel
       const headers = [["No", "Judul Buku", "Penulis", "Penerbit", "Kategori", "ISBN", "Jumlah"]];
       const data = this.filteredBuku.map((buku, index) => [
@@ -411,8 +430,8 @@ beforeDestroy() {
         buku.jumlah,
       ]);
 
-      // Tabel buku
-      doc.autoTable({ head: headers, body: data, startY: 30 });
+      // Tabel buku dimulai di bawah teks alamat dan filter
+      doc.autoTable({ head: headers, body: data, startY: 38 });
 
       // Menyesuaikan posisi tanda tangan di bawah
       const finalY = doc.lastAutoTable.finalY + 40;
@@ -434,8 +453,7 @@ beforeDestroy() {
 
       // Simpan PDF
       doc.save(`daftar_buku_${date}.pdf`);
-    }
-    ,
+    },
     exportToExcel() {
       const date = this.getFormattedDate();
       const ws = XLSX.utils.json_to_sheet([

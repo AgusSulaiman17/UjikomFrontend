@@ -29,6 +29,13 @@
                   <p class="card-text">
                     <strong>Tanggal Pengembalian:</strong> {{ hitungTanggalKembali(item.tanggal_pinjam) }}
                   </p>
+                  <p
+                    class="card-text text-danger font-weight-bold"
+                    v-if="telatKembali(item.tanggal_pinjam)"
+                  >
+                    Telat mengembalikan - Denda Rp3.000 / hari<br>
+                    Total denda: Rp{{ hitungDenda(item.tanggal_pinjam).toLocaleString('id-ID') }}
+                  </p>
                 </div>
               </div>
             </div>
@@ -48,7 +55,7 @@ import Footer from '~/components/Footer.vue';
 
 export default {
   layout: 'blank',
-  components:{
+  components: {
     Footer
   },
   data() {
@@ -65,19 +72,13 @@ export default {
     async ambilDataPeminjaman() {
       try {
         const user = JSON.parse(localStorage.getItem('user'));
-        console.log("User dari local storage:", user);
-
         const idUser = user?.id || '';
         if (!idUser) throw new Error('User tidak ditemukan di local storage');
 
         const response = await getPeminjamanByUserId(idUser);
-        console.log("Data peminjaman:", response);
-
-        // Filter hanya menampilkan peminjaman yang statusnya "disetujui"
         this.peminjaman = Array.isArray(response.data)
           ? response.data.filter(item => item.status === 'disetujui')
           : [];
-
       } catch (err) {
         this.error = err.message;
       } finally {
@@ -95,46 +96,55 @@ export default {
       const tanggal = new Date(tanggalPinjam);
       tanggal.setDate(tanggal.getDate() + 5); // Tambah 5 hari
       return this.formatTanggal(tanggal);
+    },
+    telatKembali(tanggalPinjam) {
+      const tanggalKembali = new Date(tanggalPinjam);
+      tanggalKembali.setDate(tanggalKembali.getDate() + 5);
+      const hariIni = new Date();
+      return hariIni > tanggalKembali;
+    },
+    hitungDenda(tanggalPinjam) {
+      const tanggalKembali = new Date(tanggalPinjam);
+      tanggalKembali.setDate(tanggalKembali.getDate() + 5);
+      const hariIni = new Date();
+
+      if (hariIni <= tanggalKembali) return 0;
+
+      const selisihMs = hariIni - tanggalKembali;
+      const selisihHari = Math.floor(selisihMs / (1000 * 60 * 60 * 24));
+      return selisihHari * 3000;
     }
   }
 };
 </script>
 
-
 <style scoped>
-/* Container Styling */
 .container {
   max-width: 1200px;
 }
-
-/* Style untuk setiap item peminjaman */
 .peminjaman-item {
   margin-bottom: 15px;
 }
-
 .card {
   border: none;
   border-radius: 10px;
   overflow: hidden;
   transition: transform 0.2s ease-in-out;
 }
-
 .card:hover {
   transform: scale(1.02);
   box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.15);
 }
-
 .gambar-buku {
   width: 100px;
   height: 150px;
   object-fit: cover;
   border-radius: 5px;
 }
-
-/* Status Styling */
-.badge {
-  padding: 5px 10px;
-  font-size: 14px;
-  border-radius: 5px;
+.text-danger {
+  color: #dc3545;
+}
+.font-weight-bold {
+  font-weight: bold;
 }
 </style>

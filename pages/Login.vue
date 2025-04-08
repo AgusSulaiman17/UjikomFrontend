@@ -43,24 +43,23 @@ export default {
       try {
         const loginModule = await import('~/api/auth.js');
         const { token, user } = await loginModule.login(this.email, this.password);
+
+        // Hapus data lama sebelum menyimpan data baru
+        localStorage.clear();
+
         localStorage.setItem('token', token);
         localStorage.setItem('user', JSON.stringify(user));
+
         this.$router.push(
           user.role === 'admin' ? '/admin/dashboard' :
             user.role === 'petugas' ? '/petugas/dashboard' :
               '/user/dashboard'
         );
       } catch (error) {
-        if (error.response && error.response.data && error.response.data.message) {
-          this.errorMessage = error.response.data.message;
-        } else {
-          this.errorMessage = 'Login failed, please check your email and password';
-        }
-        setTimeout(() => {
-          this.errorMessage = '';
-        }, 5000);
+        this.errorMessage = error.response?.data?.message || 'Login failed, please check your email and password';
+        setTimeout(() => { this.errorMessage = ''; }, 5000);
       }
-    },
+    }
   },
 };
 </script>
