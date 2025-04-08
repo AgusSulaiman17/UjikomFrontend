@@ -8,7 +8,7 @@
     <div v-if="error" class="alert alert-danger text-center">{{ error }}</div>
 
     <div v-if="peminjamanDikembalikan.length">
-      <div v-for="(item) in peminjamanDikembalikan" :key="item.id_peminjaman" class="peminjaman-item">
+      <div v-for="(item) in peminjamanDikembalikan" :key="item.id_peminjaman" class="peminjaman-item card-shadow">
         <div class="card" @click="goToDetail(item)">
           <div class="row no-gutters">
             <div class="col-md-3 d-flex justify-content-center align-items-center">

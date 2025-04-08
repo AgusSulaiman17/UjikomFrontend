@@ -16,6 +16,8 @@
         </div>
       </div>
     </div>
+
+    <DashboardCharts class="mt-6 ml-5" style="margin-top: 130px;" />
   </div>
 </template>
 
@@ -29,10 +31,12 @@ import { getAllPeminjaman } from "@/api/peminjaman";
 import { getAllBookings } from "~/api/peminjaman";
 import { getUsersUnapp } from "@/api/users";
 import Header from "~/components/Header.vue";
+import DashboardCharts from "~/components/DashboardCharts.vue";
 
 export default {
   components: {
     Header,
+    DashboardCharts
   },
   data() {
     return {

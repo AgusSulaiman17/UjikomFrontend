@@ -8,7 +8,9 @@
 .mt-6{
   margin-top: 150px;
 }
-
+.success{
+  background-color: rgb(66, 214, 120);
+}
 *{
   font-family: "Roboto Slab", serif;
 }

@@ -36,8 +36,6 @@
           <nuxt-link to="/login" class="login-link">
             Sudah punya akun? <span>Masuk</span>
           </nuxt-link>
-          <p v-if="successMessage" class="success-message">{{ successMessage }}</p>
-          <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
         </form>
       </div>
     </div>
@@ -65,29 +63,72 @@ export default {
   },
   methods: {
     async registerUser() {
-      this.successMessage = "";
-      this.errorMessage = "";
+  // Reset pesan
+  this.successMessage = "";
+  this.errorMessage = "";
 
-      // Validasi Nomor Telepon
-      const phoneRegex = /^0\d{7,15}$/;
-      if (!phoneRegex.test(this.user.no_telepon)) {
-        this.errorMessage = "Nomor telepon tidak valid";
-        return;
+  // Validasi nama tidak hanya angka
+  const onlyNumbersRegex = /^\d+$/;
+  if (!this.user.name.trim() || onlyNumbersRegex.test(this.user.name)) {
+    this.$toast.error("Nama tidak boleh hanya angka.", {
+      timeout: 3000,
+      position: "top-right",
+    });
+    return;
+  }
+
+  // Validasi alamat tidak hanya angka
+  if (!this.user.alamat.trim() || onlyNumbersRegex.test(this.user.alamat)) {
+    this.$toast.error("Alamat tidak boleh hanya angka.", {
+      timeout: 3000,
+      position: "top-right",
+    });
+    return;
+  }
+
+  // Validasi nomor telepon
+  const phoneRegex = /^0\d{7,15}$/;
+  if (!phoneRegex.test(this.user.no_telepon)) {
+    this.$toast.error("Nomor telepon tidak valid.", {
+      timeout: 3000,
+      position: "top-right",
+    });
+    return;
+  }
+
+  this.loading = true;
+  try {
+    const response = await createUserUnapp(this.user);
+
+    this.$toast.success(
+      response.message || "Pendaftaran berhasil, menunggu persetujuan admin.",
+      {
+        timeout: 7000,
+        position: "top-right",
       }
+    );
 
-      this.loading = true;
-      try {
-        const response = await createUserUnapp(this.user);
-        this.successMessage = response.message || "Pendaftaran berhasil, menunggu persetujuan admin.";
-
-        // Reset hanya jika pendaftaran berhasil
-        this.user = { name: "", email: "", password: "", no_telepon: "", alamat: "" };
-      } catch (error) {
-        this.errorMessage = error.response?.data?.message || error.message || "Terjadi kesalahan saat mendaftar.";
-      } finally {
-        this.loading = false;
+    // Reset form
+    this.user = {
+      name: "",
+      email: "",
+      password: "",
+      no_telepon: "",
+      alamat: "",
+    };
+  } catch (error) {
+    this.$toast.error(
+      error.response?.data?.message || error.message || "Terjadi kesalahan saat mendaftar.",
+      {
+        timeout: 3000,
+        position: "top-right",
       }
-    },
+    );
+  } finally {
+    this.loading = false;
+  }
+}
+
   },
 };
 </script>

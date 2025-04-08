@@ -110,13 +110,19 @@ export default {
   },
   computed: {
     filteredUsers() {
-      if (!this.searchQuery) return this.users;
-      const query = this.searchQuery.toLowerCase();
-      return this.users.filter(user =>
-        user.name.toLowerCase().includes(query) ||
-        user.email.toLowerCase().includes(query)
-      );
-    },
+  let hasil = this.users;
+
+  if (this.searchQuery) {
+    const query = this.searchQuery.toLowerCase();
+    hasil = hasil.filter(user =>
+      user.name.toLowerCase().includes(query) ||
+      user.email.toLowerCase().includes(query)
+    );
+  }
+
+  // Urutkan berdasarkan dibuat_pada dari terbaru ke terlama
+  return hasil.sort((a, b) => new Date(b.dibuat_pada) - new Date(a.dibuat_pada));
+},
     paginatedUsers() {
       const start = (this.currentPage - 1) * this.perPage;
       const end = start + this.perPage;

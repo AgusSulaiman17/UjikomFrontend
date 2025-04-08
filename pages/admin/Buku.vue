@@ -42,7 +42,7 @@
         </template>
 
         <template #cell(deskripsi)="data">
-          <b-button variant="info" size="sm" @click="showDeskripsi(data.item.deskripsi)">
+          <b-button variant="success" size="sm" @click="showDeskripsi(data.item.deskripsi)">
             Lihat Deskripsi
           </b-button>
         </template>
@@ -196,19 +196,26 @@ export default {
   },
   computed: {
     filteredBuku() {
-      return this.buku.filter(buku => {
-        const searchMatch = !this.searchQuery.trim() || buku.judul.toLowerCase().includes(this.searchQuery.trim().toLowerCase());
-        const titleMatch = !this.filter.judul.trim() || buku.judul.toLowerCase().includes(this.filter.judul.trim().toLowerCase());
-        const categoryMatch = this.filter.kategori ? String(buku.id_kategori || '') === String(this.filter.kategori) : true;
-        const authorMatch = !this.filter.penulis || buku.id_penulis === this.filter.penulis;
-        const publisherMatch = !this.filter.penerbit || buku.id_penerbit === this.filter.penerbit;
+      return this.buku
+        .slice()
+        // Urutkan berdasarkan waktu dibuat (terbaru di atas)
+        .sort((a, b) => new Date(b.dibuat_pada) - new Date(a.dibuat_pada))
+        // Filter data berdasarkan input pencarian
+        .filter(buku => {
+          const query = this.searchQuery.trim().toLowerCase();
+          const filterJudul = this.filter.judul.trim().toLowerCase();
+          const filterKategori = String(this.filter.kategori || '');
+          const filterIsbn = this.filter.isbn.trim().toLowerCase();
 
-        // 🔴 Perbaikan: Pencocokan ISBN harus persis
-        const isbnMatch = !this.filter.isbn.trim() || (buku.isbn && String(buku.isbn).trim().toLowerCase() === this.filter.isbn.trim().toLowerCase());
+          const searchMatch = !query || buku.judul.toLowerCase().includes(query);
+          const titleMatch = !filterJudul || buku.judul.toLowerCase().includes(filterJudul);
+          const categoryMatch = this.filter.kategori ? String(buku.id_kategori || '') === filterKategori : true;
+          const authorMatch = !this.filter.penulis || buku.id_penulis === this.filter.penulis;
+          const publisherMatch = !this.filter.penerbit || buku.id_penerbit === this.filter.penerbit;
+          const isbnMatch = !filterIsbn || (buku.isbn && String(buku.isbn).trim().toLowerCase() === filterIsbn);
 
-
-        return searchMatch && titleMatch && categoryMatch && authorMatch && publisherMatch && isbnMatch;
-      });
+          return searchMatch && titleMatch && categoryMatch && authorMatch && publisherMatch && isbnMatch;
+        });
     },
     getFilterKeterangan() {
       const filters = [];
@@ -222,10 +229,7 @@ export default {
 
       return filters.length ? filters.join(" | ") : "Tanpa Filter";
     },
-    paginatedBuku() {
-      const start = (this.currentPage - 1) * this.perPage;
-      return this.filteredBuku.slice(start, start + this.perPage);
-    },
+
     paginatedBuku() {
       const start = (this.currentPage - 1) * this.perPage;
       return this.filteredBuku.slice(start, start + this.perPage);
@@ -379,20 +383,21 @@ export default {
       try {
         const response = await getAllBuku();
         this.buku = response.data.map(b => ({
-          id_buku: b.id_buku,
-          judul: b.judul,
-          id_kategori: b.kategori?.id || "",
-          id_penulis: b.penulis?.id_penulis || "",
-          id_penerbit: b.penerbit?.id_penerbit || "",
-          kategori: b.kategori?.kategori || "Tidak ada",
-          penulis: b.penulis?.nama || "Tidak diketahui",
-          penerbit: b.penerbit?.nama || "Tidak diketahui",
-          isbn: b.isbn,
-          jumlah: b.jumlah,
-          status: b.status,
-          gambar: b.gambar ? `http://localhost:8080/${b.gambar}` : "",
-          deskripsi: b.deskripsi || "Tidak ada deskripsi",
-        }));
+  id_buku: b.id_buku,
+  judul: b.judul,
+  id_kategori: b.kategori?.id || "",
+  id_penulis: b.penulis?.id_penulis || "",
+  id_penerbit: b.penerbit?.id_penerbit || "",
+  kategori: b.kategori?.kategori || "Tidak ada",
+  penulis: b.penulis?.nama || "Tidak diketahui",
+  penerbit: b.penerbit?.nama || "Tidak diketahui",
+  isbn: b.isbn,
+  jumlah: b.jumlah,
+  status: b.status,
+  gambar: b.gambar ? `http://localhost:8080/${b.gambar}` : "",
+  deskripsi: b.deskripsi || "Tidak ada deskripsi",
+  dibuat_pada: b.dibuat_pada || b.dibuatPada || null // ✅ pastikan ini ditutup dengan benar dan dipisah koma dari atas
+}));
       } catch (error) {
         console.error("Error fetching buku:", error);
         this.$toast.error("Gagal memuat data buku!");

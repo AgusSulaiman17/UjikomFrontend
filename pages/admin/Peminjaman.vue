@@ -87,15 +87,15 @@
 
         <b-form-group label="Filter Status Peminjaman">
           <b-button-group class="d-flex">
-            <b-button :variant="tempSelectedStatus === '' ? 'primary' : 'outline-primary'"
+            <b-button :variant="tempSelectedStatus === '' ? 'success' : 'outline-success'"
               @click="tempSelectedStatus = ''">
               Semua
             </b-button>
-            <b-button :variant="tempSelectedStatus === 'dipinjam' ? 'primary' : 'outline-primary'"
+            <b-button :variant="tempSelectedStatus === 'dipinjam' ? 'success' : 'outline-success'"
               @click="tempSelectedStatus = 'dipinjam'">
               Dipinjam
             </b-button>
-            <b-button :variant="tempSelectedStatus === 'dikembalikan' ? 'primary' : 'outline-primary'"
+            <b-button :variant="tempSelectedStatus === 'dikembalikan' ? 'success' : 'outline-success'"
               @click="tempSelectedStatus = 'dikembalikan'">
               Dikembalikan
             </b-button>
@@ -119,7 +119,7 @@
           </b-list-group>
         </b-form-group>
 
-        <b-button variant="primary" @click="applyFilter">Terapkan</b-button>
+        <b-button variant="success" @click="applyFilter">Terapkan</b-button>
         <b-button variant="danger" @click="resetFilter" class="ml-2">Reset</b-button>
         <b-button variant="secondary" @click="showFilterModal = false" class="ml-2">Tutup</b-button>
       </b-modal>
@@ -151,7 +151,6 @@ import PeminjamanModal from "~/components/PeminjamanModal.vue";
 import NotificationModal from "~/components/NotificationModal.vue";
 import Header from "~/components/Header.vue";
 import * as XLSX from "xlsx";
-import { saveAs } from "file-saver";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
 
@@ -252,7 +251,11 @@ export default {
       return this.filteredPeminjaman.slice(start, end);
     },
     filteredPeminjaman() {
-      return this.peminjaman.filter((peminjaman) => {
+      // Urutkan data dari tanggal pinjam terbaru ke terlama
+      let data = this.peminjaman.slice().sort((a, b) => new Date(b.tanggal_pinjam) - new Date(a.tanggal_pinjam));
+
+      // Lanjutkan dengan filter
+      return data.filter((peminjaman) => {
         const userIdentifier = peminjaman.user ? `${peminjaman.user.name} - ${peminjaman.user.email}` : "";
         const tanggalPinjam = this.formatDate(peminjaman.tanggal_pinjam);
         const bulanPinjam = this.getMonthFromDate(peminjaman.tanggal_pinjam);
@@ -265,7 +268,7 @@ export default {
           (!this.selectedMonth || bulanPinjam === this.selectedMonth) &&
           (!this.selectedDate || tanggalPinjam === this.selectedDate) &&
           (!this.selectedStatus || statusKembali === this.selectedStatus) &&
-          (!this.selectedId || peminjaman.id_peminjaman === Number(this.selectedId)) // Perbandingan ketat
+          (!this.selectedId || peminjaman.id_peminjaman === Number(this.selectedId))
         );
       });
     },
@@ -487,145 +490,145 @@ export default {
       XLSX.writeFile(wb, `peminjaman_buku_${date}.xlsx`);
     },
     async exportToPDF() {
-  const doc = new jsPDF();
-  const date = this.getFormattedDate();
-  this.loading = true; // tampilkan spinner misalnya
-  await this.$nextTick(); // biar UI sempat update
+      const doc = new jsPDF();
+      const date = this.getFormattedDate();
+      this.loading = true; // tampilkan spinner misalnya
+      await this.$nextTick(); // biar UI sempat update
 
-  doc.setFontSize(16);
-  doc.text("Laporan Peminjaman Buku", 105, 15, { align: "center" });
-  doc.line(10, 20, 200, 20);
+      doc.setFontSize(16);
+      doc.text("Laporan Peminjaman Buku", 105, 15, { align: "center" });
+      doc.line(10, 20, 200, 20);
 
-  // Tambahan alamat dan filter
-  doc.setFontSize(10);
-  doc.text(`Alamat: ${this.alamatLengkap}`, 14, 27);
-  doc.text(`${this.filterKeterangan}`, 14, 33);
+      // Tambahan alamat dan filter
+      doc.setFontSize(10);
+      doc.text(`Alamat: ${this.alamatLengkap}`, 14, 27);
+      doc.text(`${this.filterKeterangan}`, 14, 33);
 
-  const headers = [["No", "Nama Peminjam", "Judul Buku", "Tanggal Pinjam", "Tanggal Pengembalian", "Status Peminjaman", "Denda"]];
-  const data = this.filteredPeminjaman.map((p, index) => [
-    index + 1,
-    p.user.name,
-    p.buku.judul,
-    this.formatDateTime(p.tanggal_pinjam),
-    this.formatDateTime(p.diperbarui_pada),
-    p.status_kembali ? "Sudah Dikembalikan" : "Dipinjam",
-    p.denda || 0,
-  ]);
+      const headers = [["No", "Nama Peminjam", "Judul Buku", "Tanggal Pinjam", "Tanggal Pengembalian", "Status Peminjaman", "Denda"]];
+      const data = this.filteredPeminjaman.map((p, index) => [
+        index + 1,
+        p.user.name,
+        p.buku.judul,
+        this.formatDateTime(p.tanggal_pinjam),
+        this.formatDateTime(p.diperbarui_pada),
+        p.status_kembali ? "Sudah Dikembalikan" : "Dipinjam",
+        p.denda || 0,
+      ]);
 
-  doc.autoTable({ head: headers, body: data, startY: 38 });
+      doc.autoTable({ head: headers, body: data, startY: 38 });
 
-  const finalY = doc.lastAutoTable.finalY + 40;
-  doc.setFontSize(12);
-  doc.text("Mengetahui,", 140, finalY);
-  doc.text("_________________________", 140, finalY + 25);
-  doc.setFontSize(10);
-  doc.text(this.user.name || "Tidak Diketahui", 140, finalY + 35);
-  doc.text(this.user.role || "Tidak Diketahui", 140, finalY + 42);
-  doc.text(`Tanggal Export: ${date}`, 140, finalY + 50);
+      const finalY = doc.lastAutoTable.finalY + 40;
+      doc.setFontSize(12);
+      doc.text("Mengetahui,", 140, finalY);
+      doc.text("_________________________", 140, finalY + 25);
+      doc.setFontSize(10);
+      doc.text(this.user.name || "Tidak Diketahui", 140, finalY + 35);
+      doc.text(this.user.role || "Tidak Diketahui", 140, finalY + 42);
+      doc.text(`Tanggal Export: ${date}`, 140, finalY + 50);
 
-  doc.save(`peminjaman_buku_${date}.pdf`);
-  this.loading = false; // jangan lupa matikan spinner
-},
-async printTable() {
-  const date = this.getFormattedDate();
-  this.loading = true; // tampilkan spinner
+      doc.save(`peminjaman_buku_${date}.pdf`);
+      this.loading = false; // jangan lupa matikan spinner
+    },
+    async printTable() {
+      const date = this.getFormattedDate();
+      this.loading = true; // tampilkan spinner
 
-  await this.$nextTick(); // tunggu UI update
+      await this.$nextTick(); // tunggu UI update
 
-  const printContent = document.createElement("div");
+      const printContent = document.createElement("div");
 
-  const title = document.createElement("h2");
-  title.style.textAlign = "center";
-  title.innerText = "Laporan Peminjaman Buku";
-  printContent.appendChild(title);
+      const title = document.createElement("h2");
+      title.style.textAlign = "center";
+      title.innerText = "Laporan Peminjaman Buku";
+      printContent.appendChild(title);
 
-  const line = document.createElement("hr");
-  line.style.border = "1px solid black";
-  printContent.appendChild(line);
+      const line = document.createElement("hr");
+      line.style.border = "1px solid black";
+      printContent.appendChild(line);
 
-  // Alamat dan filter rata kiri
-  const alamat = document.createElement("p");
-  alamat.style.textAlign = "left";
-  alamat.style.fontSize = "12px";
-  alamat.innerText = `Alamat: ${this.alamatLengkap}`;
-  printContent.appendChild(alamat);
+      // Alamat dan filter rata kiri
+      const alamat = document.createElement("p");
+      alamat.style.textAlign = "left";
+      alamat.style.fontSize = "12px";
+      alamat.innerText = `Alamat: ${this.alamatLengkap}`;
+      printContent.appendChild(alamat);
 
-  const keteranganFilter = document.createElement("p");
-  keteranganFilter.style.textAlign = "left";
-  keteranganFilter.style.fontSize = "12px";
-  keteranganFilter.innerText = this.filterKeterangan;
-  printContent.appendChild(keteranganFilter);
+      const keteranganFilter = document.createElement("p");
+      keteranganFilter.style.textAlign = "left";
+      keteranganFilter.style.fontSize = "12px";
+      keteranganFilter.innerText = this.filterKeterangan;
+      printContent.appendChild(keteranganFilter);
 
-  const table = document.createElement("table");
-  table.border = "1";
-  table.style.width = "100%";
-  table.style.borderCollapse = "collapse";
-  table.style.fontSize = "12px";
+      const table = document.createElement("table");
+      table.border = "1";
+      table.style.width = "100%";
+      table.style.borderCollapse = "collapse";
+      table.style.fontSize = "12px";
 
-  const thead = document.createElement("thead");
-  const headerRow = document.createElement("tr");
-  ["No", "Nama Peminjam", "Judul Buku", "Tanggal Pinjam", "Tanggal Pengembalian", "Status Peminjaman", "Denda"].forEach((text) => {
-    const th = document.createElement("th");
-    th.style.border = "1px solid black";
-    th.style.padding = "5px";
-    th.innerText = text;
-    headerRow.appendChild(th);
-  });
-  thead.appendChild(headerRow);
-  table.appendChild(thead);
+      const thead = document.createElement("thead");
+      const headerRow = document.createElement("tr");
+      ["No", "Nama Peminjam", "Judul Buku", "Tanggal Pinjam", "Tanggal Pengembalian", "Status Peminjaman", "Denda"].forEach((text) => {
+        const th = document.createElement("th");
+        th.style.border = "1px solid black";
+        th.style.padding = "5px";
+        th.innerText = text;
+        headerRow.appendChild(th);
+      });
+      thead.appendChild(headerRow);
+      table.appendChild(thead);
 
-  const tbody = document.createElement("tbody");
-  this.filteredPeminjaman.forEach((p, index) => {
-    const tr = document.createElement("tr");
-    [
-      index + 1,
-      p.user?.name || "-",
-      p.buku?.judul || "-",
-      this.formatDateTime(p.tanggal_pinjam),
-      this.formatDateTime(p.diperbarui_pada),
-      p.status_kembali ? "Sudah Dikembalikan" : "Dipinjam",
-      p.denda || "0"
-    ].forEach((text) => {
-      const td = document.createElement("td");
-      td.style.border = "1px solid black";
-      td.style.padding = "5px";
-      td.innerText = text;
-      tr.appendChild(td);
-    });
-    tbody.appendChild(tr);
-  });
-  table.appendChild(tbody);
-  printContent.appendChild(table);
+      const tbody = document.createElement("tbody");
+      this.filteredPeminjaman.forEach((p, index) => {
+        const tr = document.createElement("tr");
+        [
+          index + 1,
+          p.user?.name || "-",
+          p.buku?.judul || "-",
+          this.formatDateTime(p.tanggal_pinjam),
+          this.formatDateTime(p.diperbarui_pada),
+          p.status_kembali ? "Sudah Dikembalikan" : "Dipinjam",
+          p.denda || "0"
+        ].forEach((text) => {
+          const td = document.createElement("td");
+          td.style.border = "1px solid black";
+          td.style.padding = "5px";
+          td.innerText = text;
+          tr.appendChild(td);
+        });
+        tbody.appendChild(tr);
+      });
+      table.appendChild(tbody);
+      printContent.appendChild(table);
 
-  const signature = document.createElement("div");
-  signature.style.textAlign = "right";
-  signature.style.marginTop = "40px";
-  signature.style.fontSize = "12px";
-  signature.innerHTML = `
+      const signature = document.createElement("div");
+      signature.style.textAlign = "right";
+      signature.style.marginTop = "40px";
+      signature.style.fontSize = "12px";
+      signature.innerHTML = `
     <p>Mengetahui,</p>
     <pre>_________________________</pre>
     <p><b>${this.user?.name || "Tidak Diketahui"}</b></p>
     <p>${this.user?.role || "Tidak Diketahui"}</p>
     <p><b>Tanggal Export:</b> ${date}</p>
   `;
-  printContent.appendChild(signature);
+      printContent.appendChild(signature);
 
-  const printWindow = window.open("", "_blank");
-  printWindow.document.write(`
+      const printWindow = window.open("", "_blank");
+      printWindow.document.write(`
     <html>
       <head><title>Laporan Peminjaman Buku</title></head>
       <body>${printContent.innerHTML}</body>
     </html>
   `);
-  printWindow.document.close();
-  printWindow.focus();
+      printWindow.document.close();
+      printWindow.focus();
 
-  setTimeout(() => {
-    printWindow.print();
-    printWindow.close();
-    this.loading = false; // matikan spinner setelah print selesai
-  }, 500); // beri delay sebentar supaya isi dimuat
-}
+      setTimeout(() => {
+        printWindow.print();
+        printWindow.close();
+        this.loading = false; // matikan spinner setelah print selesai
+      }, 500); // beri delay sebentar supaya isi dimuat
+    }
   }
 };
 </script>

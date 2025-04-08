@@ -16,6 +16,7 @@
       </div>
     </div>
   </div>
+  <DashboardCharts class="mt-6" style="margin-top: 130px;" />
 </div>
 </template>
 
@@ -25,12 +26,15 @@ import { getAllPenerbit } from "@/api/penerbit";
 import { getAllPenulis } from "@/api/penulis";
 import { getAllUsers } from "@/api/users";
 import { getAllKategori } from "@/api/kategori";
-import { getAllPeminjaman } from "@/api/peminjaman";
+import { getAllBookings, getAllPeminjaman } from "@/api/peminjaman";
+import { getUsersUnapp } from "@/api/users";
 import Header from "~/components/Header.vue";
+import DashboardCharts from "~/components/DashboardCharts.vue";
 
 export default {
   components: {
-    Header
+    Header,
+    DashboardCharts
   },
   data() {
     return {
@@ -40,6 +44,8 @@ export default {
       totalUsers: 0,
       totalKategori: 0,
       totalPeminjaman: 0,
+      totalBooking: 0,
+      totalUnApp: 0,
     };
   },
   computed: {
@@ -61,6 +67,10 @@ export default {
       this.totalUsers = (await getAllUsers()).data?.length || 0;
       this.totalKategori = (await getAllKategori()).data?.length || 0;
       this.totalPeminjaman = (await getAllPeminjaman()).data?.length || 0;
+      this.totalBooking = (await getAllBookings()).data?.length || 0;
+      this.totalUnApp = (await getUsersUnapp()).data?.length || 0;
+      this.totalBooking = booking.data?.length || 0;
+      this.totalUnApp = unApp.data?.length || 0;
     } catch (error) {
       console.error("Gagal mengambil data:", error);
     }

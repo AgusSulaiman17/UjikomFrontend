@@ -8,24 +8,22 @@
             <div class="card shadow border-0 rounded-lg">
               <div class="card-body text-center p-5">
                 <div class="profile-img-container">
-                  <img
-                    v-if="user.image"
+                  <img v-if="user.image"
                     :src="user.image.startsWith('http') ? user.image : 'http://localhost:8080/' + user.image"
-                    alt="Profile Image"
-                    class="profile-img"
-                  />
+                    alt="Profile Image" class="profile-img" />
                 </div>
-                <h3 class="card-title text-primary fw-bold">{{ user.name }}</h3>
+                <h3 class="card-title text-black fw-bold">{{ user.name }}</h3>
                 <p class="text-muted"><i class="bi bi-envelope"></i> {{ user.email }}</p>
 
                 <hr />
 
                 <div class="text-start">
                   <p><i class="bi bi-geo-alt-fill text-danger"></i> <strong>Alamat:</strong> {{ user.alamat }}</p>
-                  <p><i class="bi bi-telephone-fill text-success"></i> <strong>No Telepon:</strong> {{ user.no_telepon }}</p>
+                  <p><i class="bi bi-telephone-fill text-success"></i> <strong>No Telepon:</strong> {{ user.no_telepon
+                    }}</p>
                 </div>
 
-                <b-button variant="primary" class="mt-3 shadow-sm btn-edit" @click="showEditModal">
+                <b-button variant="success" class="mt-3 shadow-sm btn-edit" @click="showEditModal">
                   <i class="bi bi-pencil-square"></i> Edit Profil
                 </b-button>
               </div>
@@ -38,15 +36,9 @@
       <b-modal v-model="showModal" title="Edit Profil" hide-footer class="modal">
         <form @submit.prevent="updateProfile">
           <div class="text-center mb-3">
-            <img
-              v-if="editedUser.imagePreview || editedUser.image"
-              :src="
-                editedUser.imagePreview ||
-                (editedUser.image.startsWith('http') ? editedUser.image : 'http://localhost:8080/' + editedUser.image)
-              "
-              alt="Preview Image"
-              class="rounded-circle img-thumbnail border border-secondary preview-img"
-            />
+            <img v-if="editedUser.imagePreview || editedUser.image" :src="editedUser.imagePreview ||
+              (editedUser.image.startsWith('http') ? editedUser.image : 'http://localhost:8080/' + editedUser.image)
+              " alt="Preview Image" class="rounded-circle img-thumbnail border border-secondary preview-img" />
           </div>
 
           <b-form-group label="Foto Profil">
@@ -141,6 +133,19 @@ export default {
     },
     async updateProfile() {
       try {
+        // Validasi nama dan alamat tidak boleh hanya angka
+        const onlyNumbersRegex = /^\d+$/;
+
+        if (!this.editedUser.name || onlyNumbersRegex.test(this.editedUser.name.trim())) {
+          this.$toast.error("Nama tidak boleh hanya berisi angka.");
+          return;
+        }
+
+        if (!this.editedUser.alamat || onlyNumbersRegex.test(this.editedUser.alamat.trim())) {
+          this.$toast.error("Alamat tidak boleh hanya berisi angka.");
+          return;
+        }
+
         const formData = new FormData();
         formData.append("name", this.editedUser.name);
         formData.append("alamat", this.editedUser.alamat);
@@ -169,7 +174,7 @@ export default {
         this.$toast.error("Gagal memperbarui profil!");
         console.error("Error updating profile:", error);
       }
-    },
+    }
   },
 };
 </script>
@@ -180,16 +185,13 @@ export default {
   display: inline-block;
   transition: transform 0.3s ease-in-out;
 }
-.profile-img-container:hover {
-  transform: scale(1.1);
-}
 
 /* Gaya Foto Profil */
 .profile-img {
   width: 150px;
   height: 150px;
   border-radius: 50%;
-  border: 3px solid #007bff;
+  border: 3px solid #080808;
   padding: 5px;
 }
 
@@ -204,6 +206,7 @@ export default {
 .btn-edit {
   transition: all 0.3s ease-in-out;
 }
+
 .btn-edit:hover {
   background-color: #0056b3;
 }
@@ -211,6 +214,7 @@ export default {
 .btn-save {
   transition: all 0.3s ease-in-out;
 }
+
 .btn-save:hover {
   background-color: #218838;
 }

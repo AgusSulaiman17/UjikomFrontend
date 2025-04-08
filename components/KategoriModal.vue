@@ -1,20 +1,15 @@
 <template>
-  <b-modal
-    v-model="showModal"
-    :title="isEditMode ? 'Edit Kategori' : 'Tambah Kategori'"
-    size="lg"
-    @ok="submitForm"
-     @hide="closeModal"
-  >
+  <b-modal v-model="showModal" :title="isEditMode ? 'Edit Kategori' : 'Tambah Kategori'" size="lg" @ok="submitForm"
+    @hide="closeModal">
     <b-form @submit.prevent="submitForm">
       <b-form-group label="Nama Kategori" label-for="name">
-        <b-form-input
-          id="name"
-          v-model="form.kategori"
-          required
-          :state="form.kategori && form.kategori.length > 0"
-        ></b-form-input>
+        <b-form-input id="name" v-model="form.kategori" :state="kategoriValid" @input="validateKategori" required
+          placeholder="Masukkan nama kategori"></b-form-input>
+        <b-form-invalid-feedback>
+          Nama kategori tidak boleh kosong atau hanya angka.
+        </b-form-invalid-feedback>
       </b-form-group>
+
     </b-form>
   </b-modal>
 </template>
@@ -36,7 +31,8 @@ export default {
   },
   data() {
     return {
-      form: { ...this.categoryData }, // Memastikan form terupdate dengan data dari categoryData
+      form: { ...this.categoryData },
+      kategoriValid: null, // null = belum dicek, true/false = valid/invalid
     };
   },
   watch: {
@@ -51,12 +47,24 @@ export default {
   },
   methods: {
     submitForm() {
-      this.$emit('submit', this.form);  // Kirim data form ke parent
+      this.validateKategori(); // validasi ulang saat submit
+
+      if (this.kategoriValid) {
+        this.$emit('submit', this.form);
+      }
     },
     closeModal() {
-    this.$emit("update:showModal", false); // Pastikan modal benar-benar ditutup
-    this.form = { id: null, kategori: '' }; // Reset form agar data lama tidak tersisa
-  },
-  },
+      this.$emit("update:showModal", false);
+      this.form = { id: null, kategori: '' };
+      this.kategoriValid = null;
+    },
+    validateKategori() {
+      const kategori = this.form.kategori.trim();
+      this.kategoriValid = kategori.length > 0 && !this.isOnlyNumber(kategori);
+    },
+    isOnlyNumber(str) {
+      return /^\d+$/.test(str); // True kalau hanya angka
+    },
+  }
 };
 </script>

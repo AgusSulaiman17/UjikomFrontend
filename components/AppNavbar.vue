@@ -1,4 +1,5 @@
 <template>
+  <div class="">
   <div :class="{ 'hidden': isHidden }" class="navbar-wrapper">
     <b-navbar toggleable="lg" class="content p-2 p-md-0 rounded-5">
       <div class="container-fluid">
@@ -52,13 +53,13 @@
               <transition name="fade">
                 <div v-show="showBookingMenu" class="submenu">
                   <nuxt-link to="/user/booking" class="submenu-link">
-                    <BIconClock /> Booking
+                    <BIconJournalCheck /> Booking
                   </nuxt-link>
                   <nuxt-link to="/user/history" class="submenu-link">
                     <BIconClockHistory /> History
                   </nuxt-link>
                   <nuxt-link to="/user/pinjaman" class="submenu-link">
-                    <BIconClockHistory /> Pinjaman
+                    <BIconBoxArrowDown /> Pinjaman
                   </nuxt-link>
                 </div>
               </transition>
@@ -81,7 +82,7 @@
               <b-dropdown-item @click="$router.push({ name: 'profileuser', params: { id: user.id } })">
                 Profile <b-icon-person></b-icon-person>
               </b-dropdown-item>
-              <b-dropdown-item @click="logout">
+              <b-dropdown-item @click="isLogoutModalVisible = true">
                 <span v-if="!isLoading">Sign Out</span>
                 <span v-else class="spinner"></span>
                 <b-icon-box-arrow-right></b-icon-box-arrow-right>
@@ -92,6 +93,20 @@
       </div>
     </b-navbar>
   </div>
+
+    <!-- Notification Modal untuk Logout -->
+    <NotificationModal :isVisible="isLogoutModalVisible" :messageTitle="'Konfirmasi Logout'"
+      :messageBody="'Apakah Anda yakin ingin keluar?'" @close="isLogoutModalVisible = false">
+      <template #footer>
+        <button @click="confirmLogout" class="btn btn-danger">
+          Ya, Keluar
+        </button>
+        <button @click="isLogoutModalVisible = false" class="btn btn-secondary">
+          Batal
+        </button>
+      </template>
+    </NotificationModal>
+</div>
 </template>
 
 
@@ -111,6 +126,7 @@ export default {
       showLogoutConfirmationModal: false,
       isLoading: false,
       showBookingMenu: false,
+      isLogoutModalVisible: false,
     };
   },
   computed: {
@@ -118,15 +134,19 @@ export default {
       return this.$store.getters.getUser;
     }
   },
+
   mounted() {
     window.addEventListener('scroll', this.handleScroll);
-    const user = localStorage.getItem('user');
-    const token = localStorage.getItem('token');
-
-    if (user && token) {
-      this.$store.commit('setUser', JSON.parse(user));
-      this.$store.commit('setToken', token);
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      this.$store.commit('setUser', JSON.parse(storedUser));
     }
+
+    // Dengarkan event "userUpdated" dari root
+    this.$root.$on("userUpdated", (newUser) => {
+      this.$store.commit("setUser", newUser);
+      localStorage.setItem("user", JSON.stringify(newUser));
+    });
   },
   methods: {
     handleScroll() {
@@ -134,16 +154,13 @@ export default {
       this.isHidden = currentScroll > this.lastScrollTop;
       this.lastScrollTop = currentScroll <= 0 ? 0 : currentScroll;
     },
-    logout() {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      this.$router.push('/login');
-    },
     confirmLogout() {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
+      this.isLogoutModalVisible = false;
       this.$router.push('/login');
     },
+
     cancelLogout() {
       this.showLogoutConfirmationModal = false;
     },

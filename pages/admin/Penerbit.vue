@@ -93,9 +93,14 @@ export default {
   },
   computed: {
     filteredPenerbit() {
-      if (!this.searchQuery) return this.penerbit;
+      let data = this.penerbit.slice();
+
+      data.sort((a, b) => new Date(b.dibuat_pada) - new Date(a.dibuat_pada));
+
+      if (!this.searchQuery) return data;
+
       const query = this.searchQuery.toLowerCase();
-      return this.penerbit.filter((penerbit) =>
+      return data.filter((penerbit) =>
         penerbit.nama.toLowerCase().includes(query)
       );
     },

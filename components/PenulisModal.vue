@@ -1,15 +1,15 @@
 <template>
-  <b-modal
-    v-model="showModal"
-    :title="isEditMode ? 'Edit Penulis' : 'Tambah Penulis'"
-    size="lg"
-    @ok="submitForm"
-    @hide="closeModal"
-  >
+  <b-modal v-model="showModal" :title="isEditMode ? 'Edit Penulis' : 'Tambah Penulis'" size="lg" @ok="submitForm"
+    @hide="closeModal">
     <b-form @submit.prevent="submitForm">
       <b-form-group label="Nama Penulis" label-for="nama">
-        <b-form-input id="nama" v-model="form.nama" required></b-form-input>
+        <b-form-input id="nama" v-model="form.nama" :state="namaValid" @input="validateNama" required
+          placeholder="Masukkan nama penulis"></b-form-input>
+        <b-form-invalid-feedback>
+          Nama penulis tidak boleh kosong atau hanya berisi angka.
+        </b-form-invalid-feedback>
       </b-form-group>
+
     </b-form>
   </b-modal>
 </template>
@@ -32,8 +32,10 @@ export default {
         id: null,
         nama: "",
       },
+      namaValid: null, // Validasi untuk nama penulis
     };
   },
+
   watch: {
     penulisData: {
       handler(newVal) {
@@ -55,14 +57,26 @@ export default {
       return this.form.id !== null && this.form.id !== undefined;
     },
   },
+
   methods: {
     submitForm() {
-      console.log("🔵 Mengirim data dari modal:", this.form);
-      this.$emit("submit", this.form);
+      this.validateNama();
+
+      if (this.namaValid) {
+        this.$emit("submit", this.form);
+      }
     },
     closeModal() {
       this.$emit("update:showModal", false);
-      this.form = { id: null, nama: "" }; // Reset form agar modal tidak terbuka kembali
+      this.form = { id: null, nama: "" };
+      this.namaValid = null;
+    },
+    validateNama() {
+      const nama = this.form.nama.trim();
+      this.namaValid = nama.length > 0 && !this.isOnlyNumber(nama);
+    },
+    isOnlyNumber(str) {
+      return /^\d+$/.test(str); // True jika hanya angka
     },
   },
 };

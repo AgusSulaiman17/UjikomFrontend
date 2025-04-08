@@ -10,8 +10,20 @@
       </b-form-group>
 
       <!-- Tombol Tambah Pengguna -->
-      <b-button variant="btn bg-ijomuda" @click="openAddModal" class="mb-3">Tambah Pengguna
-        <b-icon-plus></b-icon-plus></b-button>
+      <b-button
+  variant="btn bg-ijomuda"
+  @click="openAddModal"
+  class="mb-3"
+  :disabled="isLoadingAddUser"
+>
+  <span v-if="isLoadingAddUser">
+    <b-spinner small type="grow" label="Loading..."></b-spinner> Menambahkan...
+  </span>
+  <span v-else>
+    Tambah Pengguna <b-icon-plus></b-icon-plus>
+  </span>
+</b-button>
+
 
       <!-- Card for Table -->
       <b-table striped hover bordered responsive :items="paginatedUsers" :fields="fields"
@@ -64,7 +76,7 @@
 <script>
 import { getAllUsers, deleteUser, createUser, updateUser } from '~/api/users';
 import UserModal from '~/components/UserModal.vue';
-import NotificationModal from '~/components/NotificationModal.vue';  // Import modal konfirmasi
+import NotificationModal from '~/components/NotificationModal.vue';
 import Header from '~/components/Header.vue';
 
 export default {
@@ -80,6 +92,7 @@ export default {
       perPage: 10,
       currentPage: 1,
       showModal: false,
+      isLoadingAddUser: false,
       currentUser: {
         id: null,
         name: '',
@@ -112,12 +125,18 @@ export default {
   },
   computed: {
     filteredUsers() {
-      if (!this.searchQuery) return this.users;
-      const query = this.searchQuery.toLowerCase();
-      return this.users.filter(user =>
-        user.name.toLowerCase().includes(query) ||
-        user.email.toLowerCase().includes(query)
-      );
+      let hasil = this.users;
+
+      if (this.searchQuery) {
+        const query = this.searchQuery.toLowerCase();
+        hasil = hasil.filter(user =>
+          user.name.toLowerCase().includes(query) ||
+          user.email.toLowerCase().includes(query)
+        );
+      }
+
+      // Urutkan berdasarkan dibuat_pada dari terbaru ke terlama
+      return hasil.sort((a, b) => new Date(b.dibuat_pada) - new Date(a.dibuat_pada));
     },
     paginatedUsers() {
       const start = (this.currentPage - 1) * this.perPage;
@@ -142,30 +161,27 @@ export default {
       this.showModal = true;
     },
     async handleSubmit(userData) {
-      try {
-  if (userData.id) {
-    const response = await updateUser(userData.id, userData);
-    this.users = this.users.map(user => user.id === userData.id ? { ...user, ...userData } : user);
-    this.$toast.success(response.data.message || 'Pengguna berhasil diperbarui!');
-  } else {
-    const response = await createUser(userData);
-    await this.fetchUsers(); // Pastikan daftar pengguna diperbarui
-    this.$toast.success(response.data.message || 'Pengguna berhasil ditambahkan!');
-  }
-  this.showModal = false;
-} catch (error) {
-  console.error("Error:", error.message);
-
-  let errorMessage = 'Terjadi kesalahan. Silakan coba lagi!';
-
-  if (error.message) {
-    errorMessage = error.message;
-  }
-
-  this.$toast.error(errorMessage);
-}
-
+  this.isLoadingAddUser = true;
+  try {
+    if (userData.id) {
+      const response = await updateUser(userData.id, userData);
+      this.users = this.users.map(user => user.id === userData.id ? { ...user, ...userData } : user);
+      this.$toast.success(response.data.message || 'Pengguna berhasil diperbarui!');
+    } else {
+      const response = await createUser(userData);
+      await this.fetchUsers(); // Perbarui daftar pengguna
+      this.$toast.success(response.data.message || 'Pengguna berhasil ditambahkan!');
     }
+    this.showModal = false;
+  } catch (error) {
+    console.error("Error:", error.message);
+    let errorMessage = 'Terjadi kesalahan. Silakan coba lagi!';
+    if (error.message) errorMessage = error.message;
+    this.$toast.error(errorMessage);
+  } finally {
+    this.isLoadingAddUser = false;
+  }
+}
     ,
     async deleteUser() {
       if (!this.userToDelete) return;

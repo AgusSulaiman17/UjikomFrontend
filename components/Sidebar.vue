@@ -27,12 +27,12 @@
         </li>
         <li>
           <nuxt-link to="/admin/unappusers" v-if="user.role === 'admin' || user.role === 'petugas'" exact-active-class="active">
-            <BIconJournalAlbum /> Pendaftaran
+            <BIconPersonCheckFill /> Pendaftar
           </nuxt-link>
         </li>
         <li>
           <nuxt-link to="/admin/booking" v-if="user.role === 'admin' || user.role === 'petugas'" exact-active-class="active">
-            <BIconJournalAlbum /> Pemesanan
+            <BIconJournalCheck /> Booking
           </nuxt-link>
         </li>
         <li>
@@ -107,10 +107,6 @@ import {
   BIconBook,
   BIconPerson,
   BIconBoxArrowRight,
-  BIconJournalAlbum,
-  BIconPencilSquare,
-  BIconTags,
-  BIconBuilding
 } from "bootstrap-vue";
 import NotificationModal from "@/components/NotificationModal.vue"; // Pastikan file modal sudah ada
 
@@ -316,8 +312,7 @@ nav ul li .active {
   position: relative;
 }
 
-.dropdown li a:hover,
-.dropdown li a.active {
+.dropdown li a:hover {
   background: #0e7e5a;
   transform: translateX(5px);
   box-shadow: 3px 3px 10px rgba(14, 126, 90, 0.4);

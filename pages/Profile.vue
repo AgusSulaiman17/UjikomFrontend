@@ -7,18 +7,20 @@
             <div class="card-body text-center p-5">
               <img v-if="user.image"
                 :src="user.image.startsWith('http') ? user.image : 'http://localhost:8080/' + user.image"
-                alt="Profile Image" class="rounded-circle img-thumbnail border border-primary mb-3" width="150" height="150" />
-              <h3 class="card-title text-primary fw-bold">{{ user.name }}</h3>
+                alt="Profile Image" class="rounded-circle img-thumbnail border border-black mb-3" width="150"
+                height="150" />
+              <h3 class="card-title text-black fw-bold">{{ user.name }}</h3>
               <p class="text-muted"><i class="bi bi-envelope"></i> {{ user.email }}</p>
 
               <hr />
 
               <div class="text-start">
                 <p><i class="bi bi-geo-alt-fill text-danger"></i> <strong>Alamat:</strong> {{ user.alamat }}</p>
-                <p><i class="bi bi-telephone-fill text-success"></i> <strong>No Telepon:</strong> {{ user.no_telepon }}</p>
+                <p><i class="bi bi-telephone-fill text-success"></i> <strong>No Telepon:</strong> {{ user.no_telepon }}
+                </p>
               </div>
 
-              <b-button variant="primary" class="mt-3 shadow-sm" @click="showEditModal">
+              <b-button variant="success" class="mt-3 shadow-sm card-shadow" @click="showEditModal">
                 <i class="bi bi-pencil-square"></i> Edit Profil
               </b-button>
             </div>
@@ -74,7 +76,7 @@ import { getUserById, updateUser } from "@/api/users";
 import Header from "~/components/Header.vue";
 
 export default {
-  components:{
+  components: {
     Header
   },
   data() {
@@ -127,11 +129,23 @@ export default {
     },
     async updateProfile() {
       try {
+        // Validasi nama dan alamat tidak boleh hanya angka
+        const onlyNumbersRegex = /^\d+$/;
+
+        if (!this.editedUser.name || onlyNumbersRegex.test(this.editedUser.name.trim())) {
+          this.$toast.error("Nama tidak boleh hanya berisi angka.");
+          return;
+        }
+
+        if (!this.editedUser.alamat || onlyNumbersRegex.test(this.editedUser.alamat.trim())) {
+          this.$toast.error("Alamat tidak boleh hanya berisi angka.");
+          return;
+        }
+
         const formData = new FormData();
         formData.append("name", this.editedUser.name);
         formData.append("alamat", this.editedUser.alamat);
 
-        // Jika pengguna memasukkan password baru, tambahkan ke formData
         if (this.editedUser.password && this.editedUser.password.trim() !== "") {
           formData.append("password", this.editedUser.password);
         }
@@ -157,7 +171,6 @@ export default {
         console.error("Error updating profile:", error);
       }
     }
-
   }
 
 };

@@ -88,12 +88,19 @@ export default {
   },
   computed: {
     filteredCategories() {
-      if (!this.searchQuery) return this.categories;
-      const query = this.searchQuery.toLowerCase();
-      return this.categories.filter(category =>
-        category.kategori.toLowerCase().includes(query)
-      );
-    },
+  let categories = this.categories;
+
+  if (this.searchQuery) {
+    const query = this.searchQuery.toLowerCase();
+    categories = categories.filter(category =>
+      category.kategori.toLowerCase().includes(query)
+    );
+  }
+
+  // Urutkan berdasarkan waktu dibuat (dibuat_pada), dari terbaru ke terlama
+  return categories.sort((a, b) => new Date(b.dibuat_pada) - new Date(a.dibuat_pada));
+},
+
     paginatedCategories() {
       const start = (this.currentPage - 1) * this.perPage;
       const end = start + this.perPage;
@@ -107,7 +114,8 @@ export default {
     async fetchCategories() {
       try {
         const response = await getAllKategori();
-        this.categories = response?.data || [];
+        console.log(response.data); // Cek datanya dulu
+        this.categories = (response?.data || []).sort((a, b) => a.id_kategori - b.id_kategori);
       } catch (error) {
         console.error('Error fetching categories:', error);
       }

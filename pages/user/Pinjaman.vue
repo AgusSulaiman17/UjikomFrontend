@@ -12,7 +12,7 @@
 
       <!-- Jika ada data peminjaman -->
       <div v-if="peminjaman.length">
-        <div v-for="(item) in peminjaman" :key="item.id_peminjaman" class="peminjaman-item">
+        <div v-for="(item) in peminjaman" :key="item.id_peminjaman" class="peminjaman-item card-shadow">
           <div class="card shadow-sm">
             <div class="row no-gutters">
               <div class="col-md-3 d-flex justify-content-center align-items-center">
@@ -29,13 +29,13 @@
                   <p class="card-text">
                     <strong>Tanggal Pengembalian:</strong> {{ hitungTanggalKembali(item.tanggal_pinjam) }}
                   </p>
-                  <p
-                    class="card-text text-danger font-weight-bold"
-                    v-if="telatKembali(item.tanggal_pinjam)"
-                  >
-                    Telat mengembalikan - Denda Rp3.000 / hari<br>
-                    Total denda: Rp{{ hitungDenda(item.tanggal_pinjam).toLocaleString('id-ID') }}
-                  </p>
+                  <div v-if="telatKembali(item.tanggal_pinjam)" class="denda-alert">
+                    <strong>⚠️ Telat mengembalikan!</strong><br>
+                    Denda dikenakan sebesar <strong>Rp3.000 / hari</strong><br>
+                    <span>Total denda saat ini: <strong>Rp{{ hitungDenda(item.tanggal_pinjam).toLocaleString('id-ID')
+                        }}</strong></span>
+                  </div>
+
                 </div>
               </div>
             </div>
@@ -122,28 +122,47 @@ export default {
 .container {
   max-width: 1200px;
 }
+
 .peminjaman-item {
   margin-bottom: 15px;
 }
+
 .card {
   border: none;
   border-radius: 10px;
   overflow: hidden;
   transition: transform 0.2s ease-in-out;
 }
-.card:hover {
-  transform: scale(1.02);
-  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.15);
-}
+
 .gambar-buku {
   width: 100px;
   height: 150px;
   object-fit: cover;
   border-radius: 5px;
 }
-.text-danger {
-  color: #dc3545;
+
+.denda-alert {
+  background-color: #ffe2e2;
+  border-left: 5px solid #dc3545;
+  padding: 1rem;
+  margin-top: 1rem;
+  border-radius: 8px;
+  color: #a30000;
+  font-weight: bold;
+  font-size: 0.95rem;
+  animation: pulse 1s ease-in-out infinite alternate;
 }
+
+@keyframes pulse {
+  from {
+    transform: scale(1);
+  }
+
+  to {
+    transform: scale(1.01);
+  }
+}
+
 .font-weight-bold {
   font-weight: bold;
 }

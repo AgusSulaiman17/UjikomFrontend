@@ -100,12 +100,19 @@ export default {
   },
   computed: {
     filteredBookings() {
-      if (!this.searchQuery) return this.bookings;
-      const query = this.searchQuery.toLowerCase();
-      return this.bookings.filter((booking) =>
-        booking.user?.name.toLowerCase().includes(query)
-      );
-    },
+  let hasil = this.bookings;
+
+  if (this.searchQuery) {
+    const query = this.searchQuery.toLowerCase();
+    hasil = hasil.filter((booking) =>
+      booking.user?.name.toLowerCase().includes(query)
+    );
+  }
+
+  // Urutkan berdasarkan dibuat_pada dari terbaru ke terlama
+  return hasil.sort((a, b) => new Date(b.dibuat_pada) - new Date(a.dibuat_pada));
+},
+
     paginatedBookings() {
       const start = (this.currentPage - 1) * this.perPage;
       const end = start + this.perPage;

@@ -94,12 +94,18 @@ export default {
   },
   computed: {
     filteredPenulis() {
-      if (!this.searchQuery) return this.penulis;
-      const query = this.searchQuery.toLowerCase();
-      return this.penulis.filter((penulis) =>
-        penulis.nama.toLowerCase().includes(query)
-      );
-    },
+  let hasil = this.penulis;
+
+  if (this.searchQuery) {
+    const query = this.searchQuery.toLowerCase();
+    hasil = hasil.filter((penulis) =>
+      penulis.nama.toLowerCase().includes(query)
+    );
+  }
+
+  // Urutkan berdasarkan dibuat_pada dari terbaru ke terlama
+  return hasil.sort((a, b) => new Date(b.dibuat_pada) - new Date(a.dibuat_pada));
+},
     paginatedPenulis() {
       const start = (this.currentPage - 1) * this.perPage;
       const end = start + this.perPage;

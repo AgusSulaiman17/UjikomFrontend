@@ -203,23 +203,52 @@ export default {
       }
     },
     submitForm() {
-      const formData = new FormData();
-      if (this.isEditMode) {
-        formData.append("id_buku", this.form.id_buku);
-      }
-      formData.append("judul", this.form.judul);
-      formData.append("id_penerbit", this.form.id_penerbit);
-      formData.append("id_penulis", this.form.id_penulis);
-      formData.append("id_kategori", this.form.id_kategori);
-      formData.append("deskripsi", this.form.deskripsi);
-      formData.append("jumlah", this.form.jumlah);
-      formData.append("isbn", this.form.isbn);
-      if (this.form.gambar && typeof this.form.gambar !== "string") {
-        formData.append("gambar", this.form.gambar);
-      }
+  // Validasi semua field wajib diisi
+  if (
+    !this.form.judul.trim() ||
+    !this.form.id_penerbit ||
+    !this.form.id_penulis ||
+    !this.form.id_kategori ||
+    !this.form.deskripsi.trim() ||
+    !this.form.isbn.trim() ||
+    !this.form.jumlah ||
+    this.form.jumlah <= 0
+  ) {
+    this.$toast.error('Semua field harus diisi dengan benar.', {
+      timeout: 3000,
+      position: 'top-right',
+    });
+    return;
+  }
 
-      this.$emit("submit", formData);
-    },
+  if (isNaN(this.form.jumlah) || this.form.jumlah <= 0) {
+    this.$toast.error('Jumlah buku harus lebih dari 0.', {
+      timeout: 3000,
+      position: 'top-right',
+    });
+    return;
+  }
+
+  const formData = new FormData();
+  if (this.isEditMode) {
+    formData.append("id_buku", this.form.id_buku);
+  }
+
+  formData.append("judul", this.form.judul);
+  formData.append("id_penerbit", this.form.id_penerbit);
+  formData.append("id_penulis", this.form.id_penulis);
+  formData.append("id_kategori", this.form.id_kategori);
+  formData.append("deskripsi", this.form.deskripsi);
+  formData.append("jumlah", this.form.jumlah);
+  formData.append("isbn", this.form.isbn);
+
+  if (this.form.gambar && typeof this.form.gambar !== "string") {
+    formData.append("gambar", this.form.gambar);
+  }
+
+  this.$emit("submit", formData);
+}
+
   },
 };
 </script>
